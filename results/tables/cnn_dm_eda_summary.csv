@@ -1,0 +1,12 @@
+chỉ số,giá trị
+Số mẫu train/val/test (tập con),20000 / 1000 / 1000
+Số từ bài – trung vị,637.0
+Số từ bài – p95,1353.0
+Số từ tóm tắt – trung vị,46.0
+Số câu tóm tắt – trung bình,3.8
+Tỉ lệ nén – trung vị (x),13.6
+% unigram mới,13.0
+% bigram mới,52.2
+% trigram mới,71.7
+% câu tóm tắt có nguồn ở 3 câu đầu,25.6
+% bài chứa dấu vết rác (bất kỳ mẫu nào),62.4

@@ -1,0 +1,4 @@
+split,original_size,subset_size
+train,287113,20000
+validation,13368,1000
+test,11490,1000

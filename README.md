@@ -15,7 +15,7 @@ Bài tập lớn học phần **Xử lý ngôn ngữ tự nhiên** – Đề tà
 ## 3. Dữ liệu
 | Nguồn | Vai trò | Ghi chú |
 |---|---|---|
-| CNN/DailyMail (HuggingFace) | Huấn luyện + đánh giá chính | *(cập nhật ở Giai đoạn 1)* |
+| CNN/DailyMail (HuggingFace) | Huấn luyện + đánh giá chính |287k/13k/11k mẫu gốc; dùng tập con 20k/1k/1k, seed 42|
 | Dữ liệu tự thu thập | Điểm cộng, kiểm tra tổng quát hóa | *(cập nhật ở Giai đoạn 2)* |
 
 ## 4. Cài đặt
@@ -44,7 +44,7 @@ tests/        unit test
 
 ## Tiến độ
 - [x] GĐ0: Khởi tạo repo, workflow v1, decision log
-- [ ] GĐ1: Dữ liệu công khai + EDA
+- [x] GĐ1: Dữ liệu công khai + EDA
 - [ ] GĐ2: Tự thu thập dữ liệu
 - [ ] GĐ3: Pipeline tiền xử lý
 - [ ] GĐ4: Baseline (Lead-3, TextRank)

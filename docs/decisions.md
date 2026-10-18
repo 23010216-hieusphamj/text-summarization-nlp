@@ -15,10 +15,18 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 
 ## D2. Dữ liệu huấn luyện chính: CNN/DailyMail
 - **Lựa chọn:** CNN/DailyMail, XSum, Gigaword, Multi-News.
-- **Quyết định (giả thuyết):** CNN/DailyMail.
-- **Lý do:** benchmark phổ biến nhất, dễ so sánh với công trình khác, đủ lớn để lấy tập con huấn luyện trên GPU miễn phí.
-- **Đánh đổi:** thiên về extractive (ý chính thường nằm ở đầu bài) → cần ghi nhận khi đánh giá.
-- **Bằng chứng:** _(điền sau GĐ1: EDA mức độ trùng lặp từ bài–tóm tắt)_
+- **Quyết định:** CNN/DailyMail (tập con 20.000 train / 1.000 val / 1.000 test, seed 42).
+- **Lý do:** benchmark phổ biến nhất, dễ so sánh với công trình khác, đủ lớn để lấy tập con huấn luyện trên GPU miễn phí của Colab.
+- **Bằng chứng (EDA, GĐ1, trên tập con train 20.000 mẫu):**
+  - **Độ dài:** bài trung vị 637 từ (p95 = 1.353), tóm tắt trung vị 46 từ (p95 = 86), trung bình 3,8 câu tóm tắt; tỉ lệ nén trung vị 13,6 lần.
+  - **Mức độ abstractive:** 13,0% unigram, 52,2% bigram và 71,7% trigram của tóm tắt không xuất hiện trong bài. Tóm tắt dùng lại phần lớn từ vựng nhưng sắp xếp, rút gọn, ghép cụm khác đi. Hơn một nửa bigram là mới nên phương pháp chỉ trích nguyên câu (extractive) bị giới hạn về ROUGE-2 → là lý do để thử mô hình sinh (abstractive).
+  - **Lead bias:** 25,6% câu tóm tắt có câu nguồn nằm trong 3 câu đầu và 64,0% nằm trong 10 câu đầu. Dữ liệu thiên về đầu bài (so với ước tính ~10% cho 3 câu đầu nếu phân bố đều), nhưng khoảng 36% nội dung tóm tắt nằm từ câu 11 trở đi. Lead-3 có thể là baseline khá mạnh; sẽ kiểm chứng ở GĐ4.
+  - **Rác dữ liệu:** 62,4% bài chứa ít nhất một dấu vết cần làm sạch: tiền tố Daily Mail "By ." (34,2%), dòng "PUBLISHED/UPDATED" (22,4%), "(CNN)" (26,0%), "read more" (2,6%), Reuters (0%) → cần làm sạch ở GĐ3 (bỏ quy tắc Reuters).
+  - **Ngoại lệ:** có mẫu tóm tắt tới 1.167 từ / 128 câu và bài chỉ 39 từ → cần lọc theo độ dài ở GĐ3.
+- **Hệ quả cho cấu hình:**
+  - `max_target = 128` token: tóm tắt p95 = 86 từ (khoảng 110 token) nên 128 bao phủ gần như toàn bộ.
+  - `max_input = 512` token (≈ 390 từ): nhỏ hơn cả p25 độ dài bài (446 từ), nên phần lớn bài bị cắt cuối và có thể mất tới ~36% nội dung nguồn (các câu từ vị trí 11 trở đi). Chọn 512 để cân bằng tốc độ, bộ nhớ trên T4 và công bằng giữa các mô hình. Sẽ kiểm chứng bằng đo tỉ lệ bị cắt bằng tokenizer (GĐ3) và ablation 512 vs 1024 (GĐ6); việc làm sạch tiền tố rác ở GĐ3 cũng giải phóng thêm token hữu ích.
+- **Đánh đổi:** CNN/DM chủ yếu là tin tức tiếng Anh nên kết quả chưa chắc tổng quát sang miền khác → bổ sung dữ liệu tự thu thập ở GĐ2 để kiểm tra.
 
 ## D3. Có thu thập dữ liệu riêng
 - **Quyết định:** tự crawl bộ dữ liệu nhỏ có tóm tắt do người viết.
