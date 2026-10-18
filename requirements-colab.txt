@@ -7,3 +7,5 @@ nltk>=3.8
 pyyaml
 trafilatura
 langdetect
+beautifulsoup4
+requests

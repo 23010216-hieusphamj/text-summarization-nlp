@@ -1,0 +1,30 @@
+# Cấu hình thu thập dữ liệu tự chuẩn bị từ GOV.UK (Giai đoạn 2)
+# Giấy phép nội dung: Open Government Licence v3.0 (cần ghi nguồn, xem data/DATA_CARD.md)
+base_url: https://www.gov.uk
+user_agent: "NLP-course-project/1.0 (student research; contact: phambahieu455@gmail.com)"
+doc_types: [news_story, press_release, government_response]   # content_store_document_type
+date_from: "2023-01-01"
+date_to: "2026-09-30"
+per_window_per_type_max: 60     # tối đa số bài lấy cho mỗi (loại bài, tháng) -> cân bằng theo thời gian
+max_docs: 6000                  # tổng số bài tải về tối đa
+delay_sec: 0.5                  # nghỉ giữa các request (lịch sự với máy chủ)
+timeout_sec: 30
+max_retries: 5
+seed: 42
+raw_dir: data/raw/govuk         # cache JSON thô, có thể chạy lại tiếp (resume)
+processed_dir: data/processed
+sample_dir: data/samples
+tables_dir: results/tables
+
+clean:
+  lang: en
+  min_article_words: 80
+  max_article_words: 2500
+  min_summary_words: 8
+  max_summary_words: 80
+  min_compression: 3.0          # số từ bài / số từ tóm tắt
+  max_title_jaccard: 0.8        # loại nếu 'tóm tắt' gần như trùng tiêu đề
+split:
+  train: 0.8
+  validation: 0.1
+  test: 0.1
