@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Data lớn và checkpoint (lưu ngoài GitHub: Drive / HuggingFace Hub)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+checkpoints/
+*.pt
+*.bin
+*.safetensors
+wandb/
+runs/
+
+# Môi trường / hệ thống
+.env
+.DS_Store
+.vscode/

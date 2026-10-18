@@ -1,0 +1,32 @@
+digraph G {
+  rankdir=LR; fontname="Helvetica"; nodesep=0.35; ranksep=0.45;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#4a6fa5", fillcolor="#eaf1fb"];
+  edge [color="#555555"];
+  subgraph cluster_data { label="1. Dữ liệu"; style="rounded,dashed"; color="#999999"; fontname="Helvetica";
+    pub [label="CNN/DailyMail\n(HuggingFace)"];
+    crawl [label="Tự thu thập\n(crawl tin tức)", fillcolor="#fff4d6", color="#c9a227"];
+    clean [label="Làm sạch\nloại HTML / trùng / lọc độ dài"];
+  }
+  subgraph cluster_prep { label="2. Tiền xử lý"; style="rounded,dashed"; color="#999999"; fontname="Helvetica";
+    norm [label="Chuẩn hóa văn bản"];
+    tok [label="Tokenization\n(max 512 → 128)"];
+    split [label="Chia train / val / test"];
+  }
+  subgraph cluster_model { label="3. Mô hình"; style="rounded,dashed"; color="#999999"; fontname="Helvetica";
+    base [label="Baseline extractive\nLead-3, TextRank", fillcolor="#f0f0f0", color="#888888"];
+    s2s [label="Seq2Seq + Attention\n(từ đầu)"];
+    bart [label="BART-base\n(fine-tune) — chính", fillcolor="#dff3e3", color="#3c8d53"];
+    t5 [label="T5-small\n(fine-tune)"];
+  }
+  subgraph cluster_eval { label="4. Đánh giá & triển khai"; style="rounded,dashed"; color="#999999"; fontname="Helvetica";
+    curve [label="Đường cong hội tụ\n(loss, ROUGE / epoch)"];
+    metric [label="ROUGE-1/2/L\nBERTScore"];
+    err [label="Phân tích lỗi\n(hallucination, lặp)"];
+    demo [label="Demo\n(Gradio)", fillcolor="#fde2e2", color="#c0504d"];
+  }
+  pub -> clean; crawl -> clean; clean -> norm -> tok -> split;
+  split -> base; split -> s2s; split -> bart; split -> t5;
+  s2s -> curve; bart -> curve; t5 -> curve;
+  base -> metric; s2s -> metric; bart -> metric; t5 -> metric;
+  metric -> err; bart -> demo;
+}

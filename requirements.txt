@@ -1,0 +1,28 @@
+# Lõi
+torch>=2.1
+transformers>=4.40
+datasets>=2.19
+accelerate>=0.30
+evaluate>=0.4
+rouge-score>=0.1.2
+bert-score>=0.3.13
+nltk>=3.8
+sentencepiece
+# Baseline TextRank
+networkx>=3.2
+scikit-learn>=1.4
+# Dữ liệu, thống kê, vẽ hình
+pandas>=2.1
+numpy>=1.26
+matplotlib>=3.8
+tqdm
+pyyaml
+# Crawl (Giai đoạn 2)
+requests
+beautifulsoup4
+trafilatura
+langdetect
+# Demo (Giai đoạn 8)
+gradio>=4.0
+# Test
+pytest
