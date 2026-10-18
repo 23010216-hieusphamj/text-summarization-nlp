@@ -1,0 +1,9 @@
+# Bản nhẹ cho Google Colab (Colab đã có sẵn torch, transformers, pandas, matplotlib, numpy)
+datasets>=2.19
+evaluate>=0.4
+rouge-score>=0.1.2
+bert-score>=0.3.13
+nltk>=3.8
+pyyaml
+trafilatura
+langdetect

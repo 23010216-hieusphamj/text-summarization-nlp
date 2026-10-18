@@ -1,0 +1,12 @@
+# Cấu hình lấy tập con CNN/DailyMail (Giai đoạn 1)
+dataset_name: abisee/cnn_dailymail   # trên HuggingFace Hub
+dataset_config: "3.0.0"
+seed: 42
+sizes:            # số mẫu lấy ngẫu nhiên từ mỗi split gốc
+  train: 20000
+  validation: 1000
+  test: 1000
+output_dir: data/processed
+sample_dir: data/samples
+sample_n: 20      # số mẫu nhỏ được commit lên GitHub để minh họa
+tables_dir: results/tables
