@@ -35,4 +35,17 @@
 - Chưa kiểm định chất lượng nhãn bằng người; sẽ chấm tay một mẫu nhỏ ở Giai đoạn 7.
 
 ## Kết quả thống kê
-*(điền sau khi chạy notebook 02 với đầy đủ dữ liệu)*
+| Chỉ số | Giá trị |
+|---|---|
+| Bài thô tải về | 5.477 |
+| Bài sau làm sạch | 3.878 (70,8%) |
+| Train / Val / Test | 3.102 / 387 / 389 |
+| Loại bài (train) | news_story 1.636; press_release 1.400; government_response 66 |
+| Số từ bài (trung vị / p95) | 560,5 / 1.453,9 |
+| Số từ tóm tắt (trung vị / p95 / max) | 21 / 34 / 63 |
+| Số câu tóm tắt (trung bình) | 1,04 |
+| Tỉ lệ nén (trung vị) | 26,9 lần |
+| % unigram / bigram / trigram mới | 19,0 / 56,0 / 74,1 |
+| % câu tóm tắt có nguồn ở 3 / 10 câu đầu | 67,1 / 87,6 |
+
+Chi tiết từng bước lọc: `results/tables/govuk_cleaning_funnel.csv`.

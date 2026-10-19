@@ -1,0 +1,12 @@
+chỉ số,GOV.UK
+Số mẫu train/val/test,3102 / 387 / 389
+Số từ bài – trung vị,560.5
+Số từ bài – p95,1453.9
+Số từ tóm tắt – trung vị,21.0
+Số câu tóm tắt – trung bình,1.04
+Tỉ lệ nén – trung vị (x),26.9
+% unigram mới,19.0
+% bigram mới,56.0
+% trigram mới,74.1
+% câu tóm tắt có nguồn ở 3 câu đầu,67.1
+% câu tóm tắt có nguồn ở 10 câu đầu,87.6

@@ -28,10 +28,24 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   - `max_input = 512` token (≈ 390 từ): nhỏ hơn cả p25 độ dài bài (446 từ), nên phần lớn bài bị cắt cuối và có thể mất tới ~36% nội dung nguồn (các câu từ vị trí 11 trở đi). Chọn 512 để cân bằng tốc độ, bộ nhớ trên T4 và công bằng giữa các mô hình. Sẽ kiểm chứng bằng đo tỉ lệ bị cắt bằng tokenizer (GĐ3) và ablation 512 vs 1024 (GĐ6); việc làm sạch tiền tố rác ở GĐ3 cũng giải phóng thêm token hữu ích.
 - **Đánh đổi:** CNN/DM chủ yếu là tin tức tiếng Anh nên kết quả chưa chắc tổng quát sang miền khác → bổ sung dữ liệu tự thu thập ở GĐ2 để kiểm tra.
 
-## D3. Có thu thập dữ liệu riêng
-- **Quyết định:** tự crawl bộ dữ liệu nhỏ có tóm tắt do người viết.
+## D3. Có thu thập dữ liệu riêng: GOV.UK
+- **Quyết định:** tự thu thập bộ tin tức tiếng Anh có tóm tắt do người viết từ GOV.UK qua Content/Search API.
 - **Lý do:** điểm cộng theo yêu cầu giảng viên; kiểm tra khả năng tổng quát hóa ngoài CNN/DM.
-- **Bằng chứng:** _(điền sau GĐ2)_
+- **Vì sao GOV.UK, không phải nguồn khác:** giấy phép OGL v3.0 cho phép tái sử dụng với điều kiện ghi nguồn; có API chính thức, không cần scrape HTML; có trường `description` do biên tập viên viết. Guardian bị loại vì khóa miễn phí chỉ cho phi thương mại và điều khoản về dùng cho huấn luyện mô hình chưa rõ ràng.
+- **Quy trình:** liệt kê bài theo (loại bài × tháng) → tải nội dung (có cache, thử lại có chờ tăng dần khi gặp 503) → HTML sang văn bản → 8 bộ lọc → khử trùng lặp → chia 80/10/10 (seed 42).
+- **Bằng chứng:**
+  - **Quy mô:** 5.477 bài thô (2023-01 → 2026-09), không bài nào lỗi sau khi tải; còn 3.878 cặp sau làm sạch (70,8%), chia train/val/test = 3.102 / 387 / 389. Loại bài: news_story 1.636, press_release 1.400, government_response 66 (tập train).
+  - **Phễu làm sạch:** bước loại nhiều nhất là tóm tắt chép lại bài: 609 bài chép nguyên văn và 627 bài gần như chép một câu (overlap từ ≥ 0,9), cộng 1.236 bài (22,6% số bài thô). Tiếp theo là độ dài bài không hợp lệ (236 bài) và độ dài tóm tắt (55 bài). Khử trùng lặp loại 51 bài.
+  - **Ngưỡng lọc 0,9:** được chọn sau khi xem phân bố trên mẫu thử 300 bài (overlap ≥ 0,7 / 0,8 / 0,9 / 1,0 lần lượt chiếm 42,7% / 31,3% / 21,0% / 14,3%), tức ngưỡng được đặt sau khi quan sát dữ liệu. Tỉ lệ bài bị loại ở bước này trên toàn bộ (13,8%) khớp với trên mẫu thử (13,5%).
+  - **Độ dài:** bài trung vị 560,5 từ (p95 = 1.453,9), tóm tắt trung vị 21 từ (p95 = 34, max = 63), 1,04 câu tóm tắt; tỉ lệ nén 26,9 lần (CNN/DM: 637 từ, 46 từ, 3,8 câu, 13,6 lần).
+  - **n-gram mới:** 19,0% unigram, 56,0% bigram, 74,1% trigram (CNN/DM: 13,0 / 52,2 / 71,7). Không so sánh trực tiếp được vì ta đã lọc bỏ các tóm tắt gần như chép một câu và tóm tắt GOV.UK ngắn hơn.
+  - **Lead bias:** 67,1% câu tóm tắt có nguồn ở 3 câu đầu và 87,6% ở 10 câu đầu (CNN/DM: 25,6% và 64,0%).
+- **Hệ quả cho các giai đoạn sau:**
+  - Lead-1 / Lead-3 dự kiến là baseline mạnh trên bộ này (kiểm chứng ở GĐ4).
+  - `max_target = 64` cho GOV.UK (tóm tắt dài nhất 63 từ). Cắt đầu vào 512 token ít gây mất thông tin hơn ở CNN/DM.
+  - Mô hình huấn luyện trên CNN/DM sinh tóm tắt dài hơn nhiều so với tham chiếu GOV.UK → báo cáo kèm độ dài tóm tắt và bổ sung thí nghiệm fine-tune trên train GOV.UK.
+  - Tập test chỉ 389 mẫu → dùng bootstrap để tính khoảng tin cậy ở GĐ7.
+- **Đánh đổi:** tóm tắt chỉ một câu và miền hẹp (thông tin chính phủ Anh); `description` do biên tập viên viết cho trang web, chưa được người kiểm định chất lượng nhãn (sẽ chấm tay mẫu nhỏ ở GĐ7).
 
 ## D4. Mô hình chính: BART-base (so sánh với T5-small, Seq2Seq+Attention)
 - **Lựa chọn:** Seq2Seq+Attention (từ đầu), BART, T5, PEGASUS.
