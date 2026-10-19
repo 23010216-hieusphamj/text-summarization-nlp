@@ -1,7 +1,7 @@
 source,split,n_input,n_changed_by_cleaning,n_removed_by_filter,n_output
-cnn_dm,train,20000,12513,105,19895
-cnn_dm,validation,1000,314,0,1000
-cnn_dm,test,1000,338,0,1000
+cnn_dm,train,20000,14084,105,19895
+cnn_dm,validation,1000,333,0,1000
+cnn_dm,test,1000,356,0,1000
 govuk,train,3102,2,0,3102
 govuk,validation,387,1,0,387
 govuk,test,389,0,0,389

@@ -46,7 +46,7 @@ tests/        unit test
 - [x] GĐ0: Khởi tạo repo, workflow v1, decision log
 - [x] GĐ1: Dữ liệu công khai + EDA
 - [x] GĐ2: Tự thu thập dữ liệu
-- [ ] GĐ3: Pipeline tiền xử lý
+- [x] GĐ3: Pipeline tiền xử lý
 - [ ] GĐ4: Baseline (Lead-3, TextRank)
 - [ ] GĐ5: Seq2Seq + Attention
 - [ ] GĐ6: Fine-tune BART / T5

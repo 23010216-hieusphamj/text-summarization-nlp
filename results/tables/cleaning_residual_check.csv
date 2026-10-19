@@ -1,5 +1,13 @@
-dấu vết trong 120 ký tự đầu,% trước,% sau
-By . (đầu bài),34.16,1.83
-PUBLISHED/UPDATED,21.96,0.14
-(CNN) ở đầu bài,25.89,6.59
-Scroll down for video,0.03,0.0
+split,dấu vết,% trước,% sau
+train,By . (đầu bài),34.16,0.02
+train,PUBLISHED/UPDATED,21.96,0.14
+train,(CNN) ở đầu bài,25.89,0.03
+train,Scroll down for video,0.03,0.0
+validation,By . (đầu bài),0.0,0.0
+validation,PUBLISHED/UPDATED,0.0,0.0
+validation,(CNN) ở đầu bài,7.8,0.0
+validation,Scroll down for video,0.0,0.0
+test,By . (đầu bài),0.0,0.0
+test,PUBLISHED/UPDATED,0.0,0.0
+test,(CNN) ở đầu bài,8.4,0.0
+test,Scroll down for video,0.0,0.0

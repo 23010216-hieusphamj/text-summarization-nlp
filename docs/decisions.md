@@ -23,9 +23,9 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   - **Lead bias:** 25,6% câu tóm tắt có câu nguồn nằm trong 3 câu đầu và 64,0% nằm trong 10 câu đầu. Dữ liệu thiên về đầu bài (so với ước tính ~10% cho 3 câu đầu nếu phân bố đều), nhưng khoảng 36% nội dung tóm tắt nằm từ câu 11 trở đi. Lead-3 có thể là baseline khá mạnh; sẽ kiểm chứng ở GĐ4.
   - **Rác dữ liệu:** 62,4% bài chứa ít nhất một dấu vết cần làm sạch: tiền tố Daily Mail "By ." (34,2%), dòng "PUBLISHED/UPDATED" (22,4%), "(CNN)" (26,0%), "read more" (2,6%), Reuters (0%) → cần làm sạch ở GĐ3 (bỏ quy tắc Reuters).
   - **Ngoại lệ:** có mẫu tóm tắt tới 1.167 từ / 128 câu và bài chỉ 39 từ → cần lọc theo độ dài ở GĐ3.
-- **Hệ quả cho cấu hình:**
-  - `max_target = 128` token: tóm tắt p95 = 86 từ (khoảng 110 token) nên 128 bao phủ gần như toàn bộ.
-  - `max_input = 512` token (≈ 390 từ): nhỏ hơn cả p25 độ dài bài (446 từ), nên phần lớn bài bị cắt cuối và có thể mất tới ~36% nội dung nguồn (các câu từ vị trí 11 trở đi). Chọn 512 để cân bằng tốc độ, bộ nhớ trên T4 và công bằng giữa các mô hình. Sẽ kiểm chứng bằng đo tỉ lệ bị cắt bằng tokenizer (GĐ3) và ablation 512 vs 1024 (GĐ6); việc làm sạch tiền tố rác ở GĐ3 cũng giải phóng thêm token hữu ích.
+- **Hệ quả cho cấu hình (đã đo bằng tokenizer BART ở GĐ3, xem D7):**
+  - `max_input = 512` token: cắt 79,0% bài CNN/DM (mất 43,7% tổng token). Dùng 512 làm cấu hình mặc định và kiểm chứng bằng ablation 512 vs 1.024 (1.024 chỉ cắt 29,1% bài, mất 12,4% token) ở GĐ6.
+  - `max_target = 128` token: bao phủ 98,0% tóm tắt CNN/DM; `64` token cho GOV.UK: bao phủ 99,3%.
 - **Đánh đổi:** CNN/DM chủ yếu là tin tức tiếng Anh nên kết quả chưa chắc tổng quát sang miền khác → bổ sung dữ liệu tự thu thập ở GĐ2 để kiểm tra.
 
 ## D3. Có thu thập dữ liệu riêng: GOV.UK
@@ -65,3 +65,16 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 - Colab/Kaggle GPU T4, tập con ~20–30k mẫu, fp16.
 - Seed cố định, mỗi thí nghiệm một file config trong `configs/`.
 - Checkpoint lưu ngoài GitHub (Drive/HuggingFace Hub).
+## D7. Tiền xử lý và cấu hình độ dài
+- **Làm sạch CNN/DM:** bỏ tiền tố Daily Mail (byline, PUBLISHED/UPDATED), dateline CNN (kể cả địa danh viết hoa/thường và kiểu "(CNN)Nội dung" không có dấu "--"), cụm rác giữa bài (Scroll down for video, E-mail to a friend, Share this article) và URL; chuẩn hóa khoảng trắng. Nội dung bị thay đổi ở 14.084/20.000 bài train (70,4%), 333/1.000 val (33,3%) và 356/1.000 test (35,6%).
+- **Kết quả kiểm tra (120 ký tự đầu, train):** "By ." giảm từ 34,16% xuống 0,02%; PUBLISHED/UPDATED từ 21,96% xuống 0,14%; "(CNN)" từ 25,89% xuống 0,03%. Còn sót 33/19.895 bài train (0,17%), 0 bài ở val và test. Quy tắc làm sạch được hiệu chỉnh hai vòng sau khi kiểm tra các bài còn sót (vòng 1 còn sót 8,5% ở train do dateline viết thường và byline có từ nối).
+- **Khác biệt định dạng giữa các tập:** trước khi làm sạch, val/test không có tiền tố Daily Mail (0%) nhưng train có "By ." ở 34,16% và PUBLISHED/UPDATED ở 21,96%. Nếu không làm sạch, mô hình sẽ học các tiền tố không bao giờ xuất hiện ở tập test.
+- **Lọc ngoại lệ:** chỉ ở train CNN/DM (bài < 50 từ, tóm tắt < 10 hoặc > 150 từ, > 10 câu): loại 105/20.000 bài (0,5%), còn 19.895. Val (1.000) và test (1.000) giữ nguyên để so sánh công bằng với công trình khác. GOV.UK đã lọc ở GĐ2, chỉ thống nhất khoảng trắng (3.102 / 387 / 389).
+- **Rò rỉ dữ liệu** (trùng 300 ký tự đầu đã chuẩn hóa với train, tính sau làm sạch): CNN/DM validation 0, test 0; GOV.UK validation 1/387 (0,26%), test 0. Bài GOV.UK trùng ở validation được giữ lại vì tập này chỉ dùng chọn mô hình và tác động không đáng kể.
+- **Đầu vào mô hình:** BART nhận văn bản thuần, T5 thêm tiền tố "summarize: "; tóm tắt nhiều câu nối bằng khoảng trắng khi huấn luyện, giữ xuống dòng để tính ROUGE-Lsum; đệm động (DataCollatorForSeq2Seq, nhãn đệm -100).
+- **Độ dài (đo bằng tokenizer thật, train, sau làm sạch):**
+  - CNN/DM (BART): trung vị 788, p95 1.690, p99 2.104 token. Ở 512 token: 79,0% bài bị cắt, mất 43,7% token; ở 1.024 token: 29,1% bị cắt, mất 12,4%. T5 (có tiền tố) cắt nhiều hơn: 84,8% (mất 49,4%) ở 512 và 38,4% (mất 17,1%) ở 1.024.
+  - GOV.UK (BART): trung vị 673, p95 1.737 token; ở 512 token: 64,3% bị cắt, mất 43,1% token; ở 1.024 token: 26,3%, mất 14,4%.
+  - Tóm tắt: CNN/DM trung vị 60, p95 109 token; 2,0% dài hơn 128 token (BART; T5: 4,9%), mất 0,5% token. GOV.UK trung vị 27, p95 44 token; 0,7% dài hơn 64 token (BART), 0% dài hơn 128.
+  - **Quyết định:** `max_input = 512` làm cấu hình mặc định cho mọi mô hình (huấn luyện nhanh, vừa GPU T4, công bằng khi so sánh); `max_target = 128` (CNN/DM) và `64` (GOV.UK). BART-base chạy thêm `max_input = 1024` như ablation ở GĐ6.
+- **Đánh đổi:** cắt ở 512 token làm mất thông tin cuối bài (79% bài CNN/DM bị cắt). Với CNN/DM, 64% câu tóm tắt có nguồn nằm trong 10 câu đầu nên việc cắt chấp nhận được nhưng không miễn phí; ablation 512 vs 1024 ở GĐ6 sẽ đo tác động thực tế lên ROUGE. Các regex làm sạch được thiết kế theo định dạng của CNN/DM nên không dùng được nguyên cho nguồn khác.

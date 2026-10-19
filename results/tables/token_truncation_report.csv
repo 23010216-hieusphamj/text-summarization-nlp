@@ -1,9 +1,9 @@
 source,tokenizer,field,p50,p95,p99,max_len,pct_truncated,pct_tokens_lost
-cnn_dm,bart,input,789,1690,2104,512,79.0,43.7
-cnn_dm,bart,input,789,1690,2104,1024,29.1,12.4
+cnn_dm,bart,input,788,1690,2104,512,79.0,43.7
+cnn_dm,bart,input,788,1690,2104,1024,29.1,12.4
 cnn_dm,bart,target,60,109,140,128,2.0,0.5
-cnn_dm,t5,input,890,1922,2393,512,84.9,49.4
-cnn_dm,t5,input,890,1922,2393,1024,38.5,17.1
+cnn_dm,t5,input,889,1922,2393,512,84.8,49.4
+cnn_dm,t5,input,889,1922,2393,1024,38.4,17.1
 cnn_dm,t5,target,70,128,165,128,4.9,1.5
 govuk,bart,input,673,1737,2405,512,64.3,43.1
 govuk,bart,input,673,1737,2405,1024,26.3,14.4
