@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
-from src.data.eda_utils import compression_ratio, tokenize, word_count
+from src.data.eda_utils import compression_ratio, max_sentence_overlap, tokenize, word_count
 
 URL_RE = re.compile(r"https?://\S+|www\.\S+")
 EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
@@ -94,6 +94,10 @@ def apply_filters(records: list[dict], c: dict) -> tuple[list[dict], list[tuple[
         ("Tóm tắt khác tiêu đề", lambda r: _jaccard(r["highlights"], r["title"]) <= c["max_title_jaccard"]),
         ("Tóm tắt không chép nguyên văn bài", lambda r: _norm_key(r["highlights"]) not in _norm_key(r["article"])),
     ])
+    thr = c.get("max_copy_overlap", 0.9)        # đặt null trong config để tắt bước này
+    if thr is not None:
+        steps["Tóm tắt không gần như chép một câu trong bài"] = \
+            lambda r: max_sentence_overlap(r["article"], r["highlights"]) < thr
     cur = records
     for name, pred in steps.items():
         cur = [r for r in cur if pred(r)]

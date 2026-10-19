@@ -46,3 +46,13 @@ def test_split_reproducible_and_disjoint():
     assert [r["id"] for r in a["train"]] == [r["id"] for r in b["train"]]
     ids = [r["id"] for s in a.values() for r in s]
     assert len(ids) == len(set(ids)) == 100 and len(a["train"]) == 80
+
+
+def test_near_copy_of_one_sentence_is_dropped():
+    first = "The government has announced a new programme to support small businesses across the country"
+    near_copy = first + " today"                                  # gần như chép nguyên câu đầu
+    kept, funnel = clean.apply_filters([_rec(1, summ=near_copy), _rec(2)], CFG)
+    assert [r["id"] for r in kept] == ["/g/2"]
+    assert any("gần như chép" in name for name, _ in funnel)
+    kept2, _ = clean.apply_filters([_rec(1, summ=near_copy)], {**CFG, "max_copy_overlap": None})   # tắt bước lọc
+    assert len(kept2) == 1

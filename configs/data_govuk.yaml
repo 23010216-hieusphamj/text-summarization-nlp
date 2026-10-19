@@ -24,6 +24,7 @@ clean:
   max_summary_words: 80
   min_compression: 3.0          # số từ bài / số từ tóm tắt
   max_title_jaccard: 0.8        # loại nếu 'tóm tắt' gần như trùng tiêu đề
+  max_copy_overlap: 0.9         # loại bài nếu tóm tắt gần như chép một câu của bài; null = tắt
 split:
   train: 0.8
   validation: 0.1

@@ -74,6 +74,14 @@ def best_match_positions(article: str, highlights: str) -> list[int]:
     return out
 
 
+def max_sentence_overlap(article: str, summary: str) -> float:
+    """Tỉ lệ từ của tóm tắt nằm trong MỘT câu bài (lấy câu tốt nhất). ~1.0 nghĩa là tóm tắt chép lại một câu."""
+    s = set(tokenize(summary))
+    if not s:
+        return 0.0
+    return max((len(s & set(tokenize(x))) / len(s) for x in split_sentences(article)), default=0.0)
+
+
 def boilerplate_flags(article: str) -> dict:
     return {k: bool(p.search(article)) for k, p in BOILERPLATE_PATTERNS.items()}
 

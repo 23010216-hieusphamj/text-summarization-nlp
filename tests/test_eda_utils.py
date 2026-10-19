@@ -35,3 +35,10 @@ def test_boilerplate_flags():
 def test_describe_ignores_nan():
     d = u.describe([1, 2, 3, float("nan")])
     assert d["mean"] == 2 and d["max"] == 3
+
+
+def test_max_sentence_overlap():
+    art = "Police arrested a man in Paris on Monday. The weather was sunny and warm."
+    assert u.max_sentence_overlap(art, "Police arrested a man in Paris") == 1.0
+    assert u.max_sentence_overlap(art, "Shops closed early") == 0.0
+    assert u.max_sentence_overlap("", "anything") == 0.0
