@@ -1,0 +1,23 @@
+# Cấu hình tiền xử lý thống nhất (Giai đoạn 3)
+input_dir: data/processed          # đầu ra GĐ1, GĐ2
+output_dir: data/processed/clean
+tables_dir: results/tables
+figures_dir: results/figures
+sources: [cnn_dm, govuk]
+splits: [train, validation, test]
+
+# Lọc ngoại lệ CHỈ áp dụng cho tập train của CNN/DM (val/test giữ nguyên để so sánh công bằng)
+cnn_dm_train_filter:
+  min_article_words: 50
+  min_summary_words: 10
+  max_summary_words: 150
+  max_summary_sentences: 10
+
+# Tokenization
+tokenizers:
+  bart: facebook/bart-base
+  t5: t5-small
+t5_prefix: "summarize: "
+target_join: " "                   # nối các câu tóm tắt (CNN/DM tách bằng \n) thành một chuỗi
+max_input_candidates: [512, 1024]
+max_target_candidates: {cnn_dm: [128], govuk: [64, 128]}
