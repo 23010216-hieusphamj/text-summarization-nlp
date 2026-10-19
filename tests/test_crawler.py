@@ -63,3 +63,28 @@ def test_end_to_end(tmp_path, monkeypatch):
     row = json.loads(Path(cfg["processed_dir"], "govuk_train.jsonl").read_text().splitlines()[0])
     assert {"id", "article", "highlights", "title", "doc_type", "date"} <= set(row)
     assert (tmp_path / "tab" / "govuk_cleaning_funnel.csv").exists()
+
+
+class Flaky503Session:
+    """Trả 503 kèm 'Retry-After: 0' hai lần rồi thành công."""
+    def __init__(self):
+        self.calls = 0
+    def get(self, url, params=None, headers=None, timeout=None):
+        self.calls += 1
+        if self.calls <= 2:
+            return FakeResp(503, None, {"Retry-After": "0"})
+        return FakeResp(200, {"ok": True})
+
+
+def test_503_backoff_ignores_zero_retry_after(monkeypatch):
+    waits = []
+    monkeypatch.setattr(gc.time, "sleep", lambda s: waits.append(s))
+    c = gc.GovUKClient("https://x", "ua", delay=0, max_retries=5, session=Flaky503Session())
+    assert c.get_json("/api/content/a") == {"ok": True}
+    assert [w for w in waits if w > 0] == [2.0, 4.0]          # tăng dần, không chờ 0s
+
+
+def test_retry_after_parsing():
+    assert gc._retry_after({"Retry-After": "7"}) == 7.0
+    assert gc._retry_after({"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}) == 0.0
+    assert gc._retry_after({}) == 0.0

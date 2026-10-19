@@ -27,6 +27,11 @@ class GovUKClient:
         self.s = session or requests.Session()
         self.headers = {"User-Agent": user_agent, "Accept": "application/json"}
 
+    def _backoff(self, resp, attempt: int) -> float:
+        """Chờ lâu hơn sau mỗi lần lỗi (2, 4, 8, ... giây, tối đa 60s) và không bao giờ ngắn hơn Retry-After.
+        Trước đây dùng đúng Retry-After; máy chủ trả 'Retry-After: 0' nên crawler thử lại ngay lập tức 5 lần."""
+        return min(60.0, max(_retry_after(resp.headers), 2.0 ** (attempt + 1)))
+
     def get_json(self, path: str, params: dict | None = None) -> dict | None:
         url = f"{self.base}{path}"
         for attempt in range(self.max_retries):
@@ -42,11 +47,19 @@ class GovUKClient:
             if r.status_code == 404:
                 return None
             if r.status_code in (429, 500, 502, 503, 504):
-                wait = float(r.headers.get("Retry-After", 2 ** (attempt + 1)))
-                print(f"  HTTP {r.status_code} ở {path}; chờ {wait:.0f}s")
+                wait = self._backoff(r, attempt)
+                print(f"  HTTP {r.status_code} ở {path}; chờ {wait:.0f}s (lần {attempt + 1}/{self.max_retries})")
                 time.sleep(wait); continue
             print(f"  HTTP {r.status_code} ở {path}; bỏ qua"); return None
         return None
+
+
+def _retry_after(headers) -> float:
+    """Đọc Retry-After (số giây). Giá trị lạ hoặc ngày giờ HTTP -> 0."""
+    try:
+        return max(0.0, float(headers.get("Retry-After", 0) or 0))
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def month_windows(date_from: str, date_to: str) -> list[tuple[str, str]]:
@@ -147,12 +160,17 @@ def main(config_path: str, do_smoke: bool = False, max_docs: int | None = None, 
     random.Random(cfg["seed"]).shuffle(keys)
     keys = keys[: cfg["max_docs"]]
     print(f"Bước 2: tải nội dung {len(keys)} bài (cache: {raw_dir})")
-    ok = 0
+    ok, failed = 0, []
     for i, link in enumerate(keys, 1):
-        ok += fetch_content(client, link, raw_dir)
+        if fetch_content(client, link, raw_dir):
+            ok += 1
+        else:
+            failed.append(link)
         if i % 100 == 0:
-            print(f"  {i}/{len(keys)} (thành công {ok})")
-    print(f"Xong: {ok}/{len(keys)} bài trong {raw_dir}")
+            print(f"  {i}/{len(keys)} (thành công {ok}, lỗi {len(failed)})")
+    (raw_dir / "_failed_links.txt").write_text("\n".join(failed), encoding="utf-8")
+    print(f"Xong: {ok}/{len(keys)} bài trong {raw_dir}; {len(failed)} bài lỗi (ghi ở _failed_links.txt). "
+          "Chạy lại để thử lại riêng các bài lỗi (bài đã tải được bỏ qua).")
 
 
 if __name__ == "__main__":
