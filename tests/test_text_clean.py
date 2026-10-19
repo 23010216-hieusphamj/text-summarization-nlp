@@ -40,3 +40,30 @@ def test_clean_text_without_junk_is_unchanged_except_whitespace():
 
 def test_highlights_keep_newlines():
     assert tc.clean_highlights("First point.\n\n  Second  point.\n") == "First point.\nSecond point."
+
+
+def test_cnn_dateline_mixed_case_real_examples():
+    cases = {
+        "Las Vegas (CNN) -- The makers of Gorilla Glass, the glass that's used in gadgets.": "The makers of Gorilla Glass, the glass that's used in gadgets.",
+        "County Kildare, Ireland (CNN) -- The mayor of a town has resigned.": "The mayor of a town has resigned.",
+        "Abu Dhabi, United Arab Emirates (CNN)Lost luggage after a long flight is common.": "Lost luggage after a long flight is common.",
+        "Kiev, Ukraine (CNN)The bodies of all 33 workers have been recovered.": "The bodies of all 33 workers have been recovered.",
+        "Washington (CNN)Hillary Clinton is pressing the reset button.": "Hillary Clinton is pressing the reset button.",
+        "Los Angeles (CNN) -- \"Teflon Don\" rapper crashed his car.": "\"Teflon Don\" rapper crashed his car.",
+        "Rio de Janeiro, Brazil (CNN) -- Crowds gathered on Sunday.": "Crowds gathered on Sunday.",
+    }
+    for raw, want in cases.items():
+        assert tc.clean_article(raw) == want, raw
+
+
+def test_cnn_mention_in_a_normal_sentence_is_not_cut():
+    for s in ["Officials told (CNN) that the plan is ready.", "The mayor of Los Angeles (CNN) said nothing.",
+              "Kate Middleton told (CNN) she was pleased."]:
+        assert tc.clean_article(s) == s
+
+
+def test_daily_mail_byline_with_lowercase_words():
+    a = "By . Nick Harris for MailOnline . Stevan Jovetic lit up the Etihad Stadium on Monday evening."
+    b = "By . Name One . and Name Two . Police said the suspect fled the scene on Friday."
+    assert tc.clean_article(a) == "Stevan Jovetic lit up the Etihad Stadium on Monday evening."
+    assert tc.clean_article(b) == "Police said the suspect fled the scene on Friday."

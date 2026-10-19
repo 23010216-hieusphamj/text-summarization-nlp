@@ -1,0 +1,5 @@
+source,split,articles_also_in_train
+cnn_dm,validation,0
+cnn_dm,test,0
+govuk,validation,1
+govuk,test,0
