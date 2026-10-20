@@ -78,3 +78,11 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   - Tóm tắt: CNN/DM trung vị 60, p95 109 token; 2,0% dài hơn 128 token (BART; T5: 4,9%), mất 0,5% token. GOV.UK trung vị 27, p95 44 token; 0,7% dài hơn 64 token (BART), 0% dài hơn 128.
   - **Quyết định:** `max_input = 512` làm cấu hình mặc định cho mọi mô hình (huấn luyện nhanh, vừa GPU T4, công bằng khi so sánh); `max_target = 128` (CNN/DM) và `64` (GOV.UK). BART-base chạy thêm `max_input = 1024` như ablation ở GĐ6.
 - **Đánh đổi:** cắt ở 512 token làm mất thông tin cuối bài (79% bài CNN/DM bị cắt). Với CNN/DM, 64% câu tóm tắt có nguồn nằm trong 10 câu đầu nên việc cắt chấp nhận được nhưng không miễn phí; ablation 512 vs 1024 ở GĐ6 sẽ đo tác động thực tế lên ROUGE. Các regex làm sạch được thiết kế theo định dạng của CNN/DM nên không dùng được nguyên cho nguồn khác.
+## D8. Giao thức đánh giá baseline (GĐ4)
+- **Hệ thống:** Lead-k, Random-k, TextRank-k, Oracle-k (k = 1, 2, 3); test CNN/DM (1.000) và GOV.UK (389).
+- **Chỉ số:** ROUGE-1/2/L/Lsum (có stemming), BERTScore F1 (roberta-large, rescale), độ dài, ms/doc; bootstrap 95% (1.000 lần, seed 42).
+- **Dự đoán trước khi chạy:**
+  1. CNN/DM: Lead-3 > TextRank-3 về ROUGE-1 và ROUGE-2.
+  2. GOV.UK: Lead-1 là baseline extractive tốt nhất; Lead-3 thấp hơn Lead-1 vì dài hơn tham chiếu (~21 từ).
+  3. Cả hai bộ: Lead-k > Random-k, và Oracle chọn câu ở 3 câu đầu nhiều hơn mức phân bố đều.
+- **Kết quả / kết luận:** _(điền sau khi chạy)_

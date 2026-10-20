@@ -22,3 +22,5 @@ runs/
 .env
 .DS_Store
 .vscode/
+
+results/predictions/

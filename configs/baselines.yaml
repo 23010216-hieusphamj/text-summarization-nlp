@@ -1,0 +1,21 @@
+# Cấu hình baseline không huấn luyện + đánh giá (Giai đoạn 4)
+data_dir: data/processed/clean     # trên Colab: ghi đè bằng --data_dir /content/drive/MyDrive/.../clean
+split: test
+seed: 42
+sources:
+  cnn_dm: {ks: [1, 2, 3]}          # tham chiếu ~3,8 câu -> Lead-3 là chuẩn của văn liệu
+  govuk:  {ks: [1, 2, 3]}          # tham chiếu ~1 câu -> Lead-1 là kỳ vọng mạnh nhất (D3)
+systems: [lead, random, textrank, oracle]
+textrank:
+  stop_words: english
+  damping: 0.85
+evaluate:
+  rouge_stemmer: true
+  bootstrap_samples: 1000          # khoảng tin cậy 95%
+  bertscore: true
+  bertscore_model: roberta-large   # đổi sang model nhẹ hơn nếu hết bộ nhớ; ghi lại ở D5
+  bertscore_rescale: true
+  bertscore_batch_size: 32
+output:
+  tables_dir: results/tables
+  predictions_dir: results/predictions
