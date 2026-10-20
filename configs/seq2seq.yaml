@@ -1,0 +1,36 @@
+# Seq2Seq + Attention huấn luyện từ đầu (Giai đoạn 5, quyết định D9)
+data_dir: data/processed/clean     # trên Colab: ghi đè bằng --data_dir /content/drive/MyDrive/.../clean
+spm_model: artifacts/spm/spm_cnn_dm_16k.model
+train_source: cnn_dm
+eval_sources: [cnn_dm, govuk]      # GOV.UK chỉ đánh giá chéo miền (không huấn luyện)
+max_input: 512                     # bằng BART/T5 (D7); độ dài đã gồm </s>
+max_target: 128                    # độ dài đã gồm <s> và </s>
+
+model:
+  emb_dim: 256
+  hidden: 256
+  enc_layers: 2
+  attn_dim: 256
+  dropout: 0.3
+
+# Các khóa dưới đây dùng ở bước 4 (huấn luyện) và bước 5 (giải mã/đánh giá)
+train:
+  batch_size: 32
+  lr: 0.001
+  epochs: 15
+  clip_norm: 1.0
+  patience: 3                      # early stopping theo val loss
+  seed: 42
+  amp: true
+  num_workers: 2
+  log_every: 50                    # ghi loss theo bước mỗi 50 bước
+decode:
+  num_beams: 4
+  no_repeat_ngram: 3
+  max_len: 128
+  length_penalty: 1.0              # điểm beam chia cho (độ dài)^length_penalty
+output:
+  log_dir: results/logs
+  ckpt_dir: checkpoints            # đã bị .gitignore; trên Colab trỏ ra Drive
+  tables_dir: results/tables
+  predictions_dir: results/predictions

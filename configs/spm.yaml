@@ -1,0 +1,18 @@
+# Từ vựng SentencePiece cho Seq2Seq từ đầu (Giai đoạn 5, quyết định D9)
+data_dir: data/processed/clean     # trên Colab: ghi đè bằng --data_dir /content/drive/MyDrive/.../clean
+train_source: cnn_dm               # chỉ huấn luyện SentencePiece trên train CNN/DM đã làm sạch (tránh rò rỉ)
+train_split: train
+model_dir: artifacts/spm           # file .model/.vocab nhỏ (~vài trăm KB), được commit
+model_prefix: spm_cnn_dm_16k
+vocab_size: 16000
+model_type: bpe
+character_coverage: 0.9995
+input_sentence_size: 1000000       # số câu tối đa dùng để huấn luyện (lấy ngẫu nhiên, seed cố định)
+seed: 42
+
+# Đo tỉ lệ cắt để CHỐT max_input / max_target (thay cho số đo bằng tokenizer BART ở D7)
+measure_sources: [cnn_dm, govuk]
+measure_splits: [train, validation, test]
+max_input_candidates: [256, 400, 512]
+max_target_candidates: [64, 128]
+tables_dir: results/tables

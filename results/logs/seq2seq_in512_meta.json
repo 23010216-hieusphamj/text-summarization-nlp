@@ -1,0 +1,56 @@
+{
+  "run": "seq2seq_in512",
+  "started": "2026-10-20T06:44:34",
+  "seed": 42,
+  "n_params": 7463040,
+  "device": "cuda",
+  "gpu": "Tesla T4",
+  "n_train": 19895,
+  "n_val": 1000,
+  "config": {
+    "data_dir": "data/processed/clean",
+    "spm_model": "artifacts/spm/spm_cnn_dm_16k.model",
+    "train_source": "cnn_dm",
+    "eval_sources": [
+      "cnn_dm",
+      "govuk"
+    ],
+    "max_input": 512,
+    "max_target": 128,
+    "model": {
+      "emb_dim": 256,
+      "hidden": 256,
+      "enc_layers": 2,
+      "attn_dim": 256,
+      "dropout": 0.3
+    },
+    "train": {
+      "batch_size": 32,
+      "lr": 0.001,
+      "epochs": 15,
+      "clip_norm": 1.0,
+      "patience": 3,
+      "seed": 42,
+      "amp": true,
+      "num_workers": 2,
+      "log_every": 50
+    },
+    "decode": {
+      "num_beams": 4,
+      "no_repeat_ngram": 3,
+      "max_len": 128
+    },
+    "output": {
+      "log_dir": "results/logs",
+      "ckpt_dir": "checkpoints",
+      "tables_dir": "results/tables",
+      "predictions_dir": "results/predictions"
+    }
+  },
+  "best_val_loss": 3.674041374362245,
+  "best_epoch": 13,
+  "stopped_early": false,
+  "train_seconds": 4383.8,
+  "global_step": 9330,
+  "finished": "2026-10-20T07:57:43"
+}

@@ -2,7 +2,7 @@
 
 Bài tập lớn học phần **Xử lý ngôn ngữ tự nhiên** – Đề tài: *Xây dựng hệ thống tóm tắt văn bản tiếng Anh*.
 
-> Trạng thái: Giai đoạn 4 – Baseline (xem [Tiến độ](#tiến-độ))
+> Trạng thái: Giai đoạn 5 – Seq2Seq + Attention (xem [Tiến độ](#tiến-độ))
 
 ## 1. Bài toán
 - **Đầu vào:** một bài văn bản tiếng Anh (ví dụ: bài báo tin tức).
@@ -29,6 +29,7 @@ pip install -r requirements.txt
 
 ## 5. Cấu trúc thư mục
 ```
+artifacts/    từ vựng SentencePiece (nhỏ, có commit); checkpoint nằm ngoài repo
 configs/      cấu hình thí nghiệm (yaml)
 data/         dữ liệu (raw/processed không commit)
 src/          mã nguồn: crawl, preprocessing, baselines, models, train, evaluate
@@ -65,15 +66,39 @@ tests/        unit test
 
 Nhận xét ngắn: Lead-3 (CNN/DM) và Lead-1 (GOV.UK) là baseline extractive mạnh nhất, vượt TextRank và Random có ý nghĩa thống kê (kiểm định bootstrap ghép cặp, `results/tables/baselines_paired_tests.csv`). Đây là mốc cần vượt ở Giai đoạn 6. Chi tiết và hạn chế: xem `docs/decisions.md` (D8).
 
+### Seq2Seq + Attention huấn luyện từ đầu (Giai đoạn 5)
+
+BiGRU 2 tầng + attention cộng, 7,46 triệu tham số, từ vựng SentencePiece BPE 16k, huấn luyện trên 19.895 mẫu train CNN/DM (73 phút, Tesla T4); đường cong hội tụ: `results/figures/seq2seq_in512_loss.png`. Cấu hình giải mã chính: beam 4, chặn lặp trigram (xem D9).
+
+**CNN/DailyMail** (n = 1.000)
+
+| Hệ thống | ROUGE-1 | ROUGE-2 | ROUGE-Lsum | BERTScore | Độ dài | % lặp trigram |
+|---|---|---|---|---|---|---|
+| Seq2Seq, greedy | 27,6 | 8,5 | 25,5 | – | 40,1 | 70,2 |
+| Seq2Seq, beam 4 | 31,5 | 12,1 | 29,0 | – | 41,2 | 56,5 |
+| **Seq2Seq, beam 4 + chặn lặp** | **33,3** | **13,0** | **30,9** | **20,8** | 37,5 | 2,2 |
+| Lead-3 (baseline) | 40,3 | 17,6 | 36,5 | 26,0 | 77,4 | – |
+
+**GOV.UK** (n = 389, chéo miền: huấn luyện trên CNN/DM)
+
+| Hệ thống | ROUGE-1 | ROUGE-2 | ROUGE-Lsum | BERTScore | Độ dài | % lặp trigram |
+|---|---|---|---|---|---|---|
+| Seq2Seq, greedy | 21,2 | 5,9 | 17,7 | – | 38,8 | 60,7 |
+| Seq2Seq, beam 4 | 23,6 | 7,7 | 19,1 | – | 41,1 | 45,8 |
+| **Seq2Seq, beam 4 + chặn lặp** | **24,9** | **8,0** | **20,3** | **14,3** | 37,4 | 2,6 |
+| Lead-1 (baseline) | 33,1 | 15,0 | 25,5 | 30,0 | 36,6 | – |
+
+Nhận xét ngắn: Seq2Seq từ đầu thấp hơn Lead-3 (CNN/DM) và Lead-1 (GOV.UK) có ý nghĩa thống kê (`results/tables/seq2seq_paired_tests.csv`). Chặn lặp trigram giảm lỗi lặp từ 56–70% xuống khoảng 2% và tăng ROUGE-1 1,3–1,8 điểm so với beam 4 không chặn. Đây là mốc "từ đầu" để đối chiếu với BART/T5 ở Giai đoạn 6.
+
 *(Bảng so sánh đầy đủ với BART-base, T5-small và phân tích lỗi sẽ cập nhật ở Giai đoạn 7.)*
 
 ## Tiến độ
-- [x] GĐ0: Khởi tạo repo, workflow v1, decision log
-- [x] GĐ1: Dữ liệu công khai + EDA
-- [x] GĐ2: Tự thu thập dữ liệu
-- [x] GĐ3: Pipeline tiền xử lý
-- [x] GĐ4: Baseline (Lead-3, TextRank)
-- [ ] GĐ5: Seq2Seq + Attention
+- [x] GĐ0: Khởi tạo repo, workflow v1, decision log - [`v0.1-setup`]
+- [x] GĐ1: Dữ liệu công khai + EDA — [`v0.2-data`]
+- [x] GĐ2: Tự thu thập dữ liệu — [`v0.3-custom-data`]
+- [x] GĐ3: Pipeline tiền xử lý — [`v0.4-preprocessing`]
+- [x] GĐ4: Baseline (Lead-3, TextRank) — [`v0.5-baselines`]
+- [x] GĐ5: Seq2Seq + Attention— [`v0.6-seq2seq`]
 - [ ] GĐ6: Fine-tune BART / T5
 - [ ] GĐ7: Đánh giá + phân tích lỗi
 - [ ] GĐ8: Demo

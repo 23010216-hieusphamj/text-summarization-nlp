@@ -98,3 +98,39 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   5. Khoảng cách tới Oracle còn lớn: Lead-3 đạt 71% R1 và 52% R2 của Oracle-3 (CNN/DM); Lead-1 đạt 77% R1 của Oracle-1 (GOV.UK).
 - **Kết luận:** giả thuyết lead bias được xác nhận ở cả hai bộ. Lead-3 (CNN/DM) và Lead-1 (GOV.UK) là mốc extractive thực tế cần vượt ở GĐ6.
 - **Hạn chế:** Oracle là xấp xỉ tham lam dùng tham chiếu nên không phải hệ thống thực tế. Lead-1 GOV.UK dài hơn tham chiếu 72% (36,6 vs 21,3 từ). Bộ lọc overlap ≥ 0,9 ở GĐ2 có thể làm lệch test GOV.UK. Test GOV.UK chỉ 389 mẫu (CI rộng ~±1,7 điểm R1). Kiểm định ghép cặp mới làm cho ROUGE, chưa làm cho BERTScore, và chưa hiệu chỉnh đa so sánh.
+
+## D9. Mô hình Seq2Seq + Attention huấn luyện từ đầu (GĐ5)
+- **Bối cảnh:** GĐ4 cho mốc extractive rất mạnh (Lead-3: R1 40,3 / R2 17,6 trên CNN/DM). Cần một mô hình neural **không tiền huấn luyện** để (i) có đường cong hội tụ "từ đầu" đối chiếu với BART/T5 ở GĐ6, (ii) biện minh vì sao cần Transformer tiền huấn luyện.
+- **Lựa chọn:**
+  - Kiến trúc: (a) GRU/LSTM + attention, (b) thêm pointer-generator/coverage, (c) Transformer nhỏ từ đầu.
+  - Từ vựng: (a) word-level, (b) SentencePiece BPE huấn luyện riêng, (c) dùng lại tokenizer BART (không dùng trọng số).
+- **Quyết định (giả thuyết):**
+  - Encoder BiGRU 2 tầng, decoder GRU 1 tầng, attention cộng (Bahdanau); embedding 256, hidden 256, dropout 0,3; output chia sẻ trọng số với embedding (~7–8 triệu tham số, ước lượng).
+  - SentencePiece BPE 16k, huấn luyện **chỉ trên train CNN/DM sau làm sạch** (tránh rò rỉ), dùng chung cho bài và tóm tắt. Id đặc biệt: `<pad>=0, <unk>=1, <s>=2, </s>=3`.
+  - `max_input = 512`, `max_target = 128`, **giống BART/T5 (D7)** để so sánh công bằng giữa Seq2Seq và các mô hình tiền huấn luyện.
+  - Huấn luyện: Adam lr 1e-3, batch 32, clip gradient 1,0, teacher forcing, early stopping theo val loss, seed 42; lưu loss mỗi epoch vào `results/logs/`.
+  - Giải mã: beam search 4 beam, chặn lặp trigram; so sánh với greedy trong ablation nhỏ.
+  - Huấn luyện trên train CNN/DM; GOV.UK (3.102 mẫu train) quá ít để huấn luyện từ đầu nên chỉ **đánh giá chéo miền** (train CNN/DM → test GOV.UK).
+- **Lý do:** GRU nhẹ hơn LSTM, vừa GPU T4 của Colab; BPE tránh từ ngoài từ vựng (tên riêng nhiều trong tin tức) mà không cần cơ chế copy; cùng bộ chỉ số và cài đặt đánh giá với D5/D8 nên so sánh được trực tiếp với baseline.
+- **Chốt `max_input = 512`:** thử 256 / 400 / 512 bằng tokenizer SentencePiece (xem bằng chứng). Chọn 512 vì (i) tỉ lệ token bị mất (46,5%) gần với BART ở 512 (43,7%, D7), nên điều kiện đầu vào giữa Seq2Seq và BART/T5 tương đương; (ii) 400 mất nhiều hơn khoảng 10 điểm phần trăm token (57,1%) trong khi tiết kiệm thời gian huấn luyện không nhiều (độ phức tạp GRU gần tuyến tính theo độ dài, ước lượng ~20%).
+- **Không chọn:** pointer-generator/coverage (giảm lặp và ảo giác nhưng làm phạm vi GĐ5 phình ra; nêu như hướng mở rộng); Transformer từ đầu (tốn tài nguyên, trùng vai trò với BART ở GĐ6).
+- **Dự đoán trước khi chạy** (chưa có số liệu, chỉ là giả thuyết):
+  1. Seq2Seq **thấp hơn Lead-3** về ROUGE-1 trên CNN/DM, với CI không chồng lấn (dự kiến R1 khoảng 25–33, R2 khoảng 5–12; khoảng này là ước đoán, không phải kết quả).
+  2. Không chặn lặp trigram thì tóm tắt lặp câu/cụm nhiều hơn rõ rệt, ROUGE thấp hơn bản có chặn.
+  3. Val loss ngừng giảm sau một số epoch trong khi train loss vẫn giảm (quá khớp do chỉ ~20k mẫu).
+  4. Chéo miền sang GOV.UK kém hơn Lead-1 (R1 33,1) và sinh dài hơn tham chiếu (~21 từ).
+  5. Nếu Seq2Seq **vượt** Lead-3, coi là kết quả bất thường và kiểm tra rò rỉ dữ liệu, lỗi đánh giá trước khi ghi nhận.
+- **Bằng chứng (từ vựng, đã đo):**
+  - SentencePiece BPE 16k cho 1,33 token/từ (CNN/DM train); tỉ lệ `<unk>` 0,18% (CNN/DM) và 0,33–0,39% (GOV.UK).
+  - CNN/DM train, đầu vào: ở 256 / 400 / 512 token, bị cắt 98,0% / 90,8% / 81,9% bài, mất 72,1% / 57,1% / 46,5% token (tương đương khoảng 193 / 301 / 385 từ giữ lại, xấp xỉ). Số đo trên val và test gần với train.
+  - Tóm tắt: `max_target = 128` cắt 2,8% mẫu train CNN/DM, mất 0,8% token; GOV.UK ở 128 là 0%.
+  - Chi tiết: `results/tables/spm_truncation_report.csv`, `spm_summary.csv`.
+- **Kết quả (test CNN/DM n=1.000, GOV.UK n=389; checkpoint epoch 13; CI 95% bootstrap; cấu hình chính beam 4 + chặn lặp trigram được chốt ở D9 trước khi chạy):**
+  1. Huấn luyện: 15 epoch (không dừng sớm), tốt nhất ở epoch 13 (val loss 3,674; ppl 39,4); 7.463.040 tham số; 4.384 giây (~73 phút) trên Tesla T4. Val loss gần như phẳng từ epoch ~10 trong khi train loss vẫn giảm (3,43 so với 3,68 ở epoch 15).
+  2. CNN/DM: Seq2Seq (beam 4, chặn lặp) đạt R1 33,3 / R2 13,0 / Lsum 30,9 / BERTScore 20,8, thấp hơn Lead-3 (40,3 / 17,6 / 36,5 / 26,0): hiệu R1 −7,0 CI [−7,8; −6,3], R2 −4,6 [−5,3; −3,9]. Cao hơn Random-3 (R1 28,5) và thấp hơn TextRank-3 (35,2) theo R1 (CI không chồng lấn: [32,6; 34,0] so với [34,5; 35,9]; so sánh này chưa ghép cặp).
+  3. Ablation giải mã (CNN/DM, R1/R2): greedy 27,6/8,5; beam 4 không chặn lặp 31,5/12,1; beam 4 + chặn lặp 33,3/13,0. Chặn lặp tăng R1 +1,8 (CI [1,4; 2,1]) so với beam 4 không chặn và +5,7 ([5,1; 6,3]) so với greedy. Tỉ lệ dự đoán có trigram từ lặp: 70,2% / 56,5% / 2,2%.
+  4. GOV.UK (chéo miền, không huấn luyện trên GOV.UK): R1 24,9 / R2 8,0 / Lsum 20,3 / BERTScore 14,3, thấp hơn Lead-1 (33,1 / 15,0 / 25,5 / 30,0): hiệu R1 −8,2 CI [−9,7; −6,6]. So với Lead-3 (R1 23,9) khác biệt R1 không có ý nghĩa (+1,0, CI [−0,1; 2,0]), R2 thấp hơn (−2,7). Độ dài sinh ra 37,4 từ so với tham chiếu 21,3 (+76%). Chặn lặp: R1 +1,3 (CI [0,8; 1,9]); tỉ lệ lặp 60,7% / 45,8% / 2,6%.
+  5. Thời gian giải mã khoảng 100 ms/bài (beam 4) và 81–83 ms/bài (greedy).
+- **Đối chiếu dự đoán:** (1) đúng hướng (thấp hơn Lead-3, CI không chồng lấn) nhưng khoảng ước đoán trượt nhẹ: R1 33,3 (dự kiến 25–33), R2 13,0 (dự kiến 5–12). (2) đúng, mạnh hơn kỳ vọng. (3) đúng ở mức vừa (chênh train/val 0,25). (4) đúng cả hai vế. (5) không xảy ra.
+- **Kết luận:** Seq2Seq huấn luyện từ đầu trên 20k mẫu chưa vượt baseline extractive mạnh nhất (Lead-3 ở CNN/DM, Lead-1 ở GOV.UK), nên Lead-k vẫn là mốc cần vượt ở GĐ6. Trong cấu hình giải mã, chặn lặp là yếu tố quan trọng nhất (ROUGE tăng rõ và lỗi lặp giảm từ 56–70% xuống 2%). Beam 4 + chặn lặp trigram là mốc "neural từ đầu" dùng ở GĐ6–7.
+- **Hạn chế:** một seed và một lần huấn luyện (CI chỉ phản ánh mẫu test, không phản ánh phương sai huấn luyện); siêu tham số mô hình và `length_penalty` (=1,0) chưa tinh chỉnh (nếu tinh chỉnh phải làm trên val, không phải test); chặn lặp ở mức token SentencePiece nên vẫn còn 2,2% dự đoán lặp trigram từ; ablation không có BERTScore; beam 4 so với greedy chưa kiểm định ghép cặp; chưa phân tích định tính (để GĐ7); độ dài sinh ra ngắn hơn tham chiếu 29% ở CNN/DM (37,5 so với 52,6 từ) và dài hơn 76% ở GOV.UK; kết quả không tách được ảnh hưởng của kiến trúc, lượng dữ liệu và tiền huấn luyện, cần đối chiếu với BART/T5 ở GĐ6.
