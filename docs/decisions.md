@@ -11,7 +11,8 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 - **Quyết định (giả thuyết):** abstractive là hệ thống chính; extractive làm baseline.
 - **Lý do:** extractive chỉ chọn câu có sẵn nên khó cô đọng, dễ rời rạc; abstractive diễn đạt lại, gần cách con người tóm tắt.
 - **Đánh đổi:** abstractive có rủi ro "ảo giác" (hallucination) và tốn tài nguyên hơn.
-- **Bằng chứng:** _(điền sau GĐ7: ROUGE, BERTScore, phân tích lỗi)_
+- **Bằng chứng (GĐ4):** mức trần của extractive không thấp (Oracle-3 CNN/DM: R1 56,7, R2 33,5; Oracle-1 GOV.UK: R1 43,1, R2 23,6), nên không thể nói extractive "bị giới hạn" bởi chính cách chọn câu. Điều số liệu cho thấy là extractive thực tế còn rất xa mức trần: Lead-3 chỉ đạt 71% R1 và 52% R2 của Oracle-3, vì không biết trước câu nào quan trọng (chỉ 14,2% bài CNN/DM có câu tốt nhất là câu đầu tiên). Việc abstractive có thực sự tốt hơn sẽ được kiểm chứng bằng BART-base ở GĐ6.
+- **Bằng chứng (GĐ7):** _(điền sau: ROUGE, BERTScore, phân tích lỗi)_
 
 ## D2. Dữ liệu huấn luyện chính: CNN/DailyMail
 - **Lựa chọn:** CNN/DailyMail, XSum, Gigaword, Multi-News.
@@ -19,8 +20,8 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 - **Lý do:** benchmark phổ biến nhất, dễ so sánh với công trình khác, đủ lớn để lấy tập con huấn luyện trên GPU miễn phí của Colab.
 - **Bằng chứng (EDA, GĐ1, trên tập con train 20.000 mẫu):**
   - **Độ dài:** bài trung vị 637 từ (p95 = 1.353), tóm tắt trung vị 46 từ (p95 = 86), trung bình 3,8 câu tóm tắt; tỉ lệ nén trung vị 13,6 lần.
-  - **Mức độ abstractive:** 13,0% unigram, 52,2% bigram và 71,7% trigram của tóm tắt không xuất hiện trong bài. Tóm tắt dùng lại phần lớn từ vựng nhưng sắp xếp, rút gọn, ghép cụm khác đi. Hơn một nửa bigram là mới nên phương pháp chỉ trích nguyên câu (extractive) bị giới hạn về ROUGE-2 → là lý do để thử mô hình sinh (abstractive).
-  - **Lead bias:** 25,6% câu tóm tắt có câu nguồn nằm trong 3 câu đầu và 64,0% nằm trong 10 câu đầu. Dữ liệu thiên về đầu bài (so với ước tính ~10% cho 3 câu đầu nếu phân bố đều), nhưng khoảng 36% nội dung tóm tắt nằm từ câu 11 trở đi. Lead-3 có thể là baseline khá mạnh; sẽ kiểm chứng ở GĐ4.
+  - **Mức độ abstractive:** 13,0% unigram, 52,2% bigram và 71,7% trigram của tóm tắt không xuất hiện trong bài. Tóm tắt dùng lại phần lớn từ vựng nhưng sắp xếp, rút gọn, ghép cụm khác đi. Hơn một nửa bigram là mới nên tóm tắt tham chiếu mang tính diễn đạt lại, không chỉ chép câu gốc. Ở GĐ4, mức trần extractive (Oracle) vẫn cao (R2 33,5), nên lý do chọn abstractive không phải là "extractive bị chặn ở ROUGE-2" mà là extractive thực tế còn rất xa mức trần đó (xem D1, D8).
+  - **Lead bias:** 25,6% câu tóm tắt có câu nguồn nằm trong 3 câu đầu và 64,0% nằm trong 10 câu đầu. Dữ liệu thiên về đầu bài (so với mức phân bố đều ~12,7% cho 3 câu đầu, tính theo số câu của từng bài test), nhưng khoảng 36% nội dung tóm tắt nằm từ câu 11 trở đi. Đã kiểm chứng ở GĐ4 (xem D8): Lead-3 là baseline extractive mạnh nhất (R1 40,3; R2 17,6), vượt TextRank-3 và Random-3 có ý nghĩa thống kê. Phép đo bằng Oracle theo ROUGE cho thấy câu tốt nhất nằm trong 3 câu đầu ở 39,8% bài (gấp 3,1 lần mức phân bố đều 12,7%) và trong 10 câu đầu ở 77,2%; nhưng chỉ 14,2% bài có câu tốt nhất là câu đầu tiên, nên Lead-1 yếu (R1 27,9) còn Lead-3 mới mạnh.
   - **Rác dữ liệu:** 62,4% bài chứa ít nhất một dấu vết cần làm sạch: tiền tố Daily Mail "By ." (34,2%), dòng "PUBLISHED/UPDATED" (22,4%), "(CNN)" (26,0%), "read more" (2,6%), Reuters (0%) → cần làm sạch ở GĐ3 (bỏ quy tắc Reuters).
   - **Ngoại lệ:** có mẫu tóm tắt tới 1.167 từ / 128 câu và bài chỉ 39 từ → cần lọc theo độ dài ở GĐ3.
 - **Hệ quả cho cấu hình (đã đo bằng tokenizer BART ở GĐ3, xem D7):**
@@ -40,11 +41,12 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   - **Độ dài:** bài trung vị 560,5 từ (p95 = 1.453,9), tóm tắt trung vị 21 từ (p95 = 34, max = 63), 1,04 câu tóm tắt; tỉ lệ nén 26,9 lần (CNN/DM: 637 từ, 46 từ, 3,8 câu, 13,6 lần).
   - **n-gram mới:** 19,0% unigram, 56,0% bigram, 74,1% trigram (CNN/DM: 13,0 / 52,2 / 71,7). Không so sánh trực tiếp được vì ta đã lọc bỏ các tóm tắt gần như chép một câu và tóm tắt GOV.UK ngắn hơn.
   - **Lead bias:** 67,1% câu tóm tắt có nguồn ở 3 câu đầu và 87,6% ở 10 câu đầu (CNN/DM: 25,6% và 64,0%).
+  - **Hiệu chỉnh ở GĐ4:** phép đo lead bias bằng độ trùng từ cho 67,1% câu tóm tắt có nguồn ở 3 câu đầu, cao hơn nhiều so với phép đo bằng Oracle theo ROUGE (câu tốt nhất nằm trong 3 câu đầu ở 50,4% bài GOV.UK và 39,8% bài CNN/DM). So với mức phân bố đều, lead bias của GOV.UK (2,6×) không mạnh hơn CNN/DM (3,1×); mức phân bố đều của GOV.UK cao hơn (19,7% so với 12,7%), nghĩa là bài ít câu hơn. Tuy nhiên câu đầu tiên là câu tốt nhất ở 34,5% bài GOV.UK so với 14,2% ở CNN/DM. Lead-1 mạnh trên GOV.UK nhiều khả năng do tóm tắt chỉ ~1 câu và câu đầu bài hay chứa ý chính; đây là suy luận, chưa được kiểm tra riêng.
 - **Hệ quả cho các giai đoạn sau:**
-  - Lead-1 / Lead-3 dự kiến là baseline mạnh trên bộ này (kiểm chứng ở GĐ4).
+  - Đã kiểm chứng ở GĐ4 (xem D8): Lead-1 là baseline extractive mạnh nhất trên bộ này; Lead-2/3 thấp hơn vì dài hơn tham chiếu (~1 câu).
   - `max_target = 64` cho GOV.UK (tóm tắt dài nhất 63 từ). Cắt đầu vào 512 token ít gây mất thông tin hơn ở CNN/DM.
   - Mô hình huấn luyện trên CNN/DM sinh tóm tắt dài hơn nhiều so với tham chiếu GOV.UK → báo cáo kèm độ dài tóm tắt và bổ sung thí nghiệm fine-tune trên train GOV.UK.
-  - Tập test chỉ 389 mẫu → dùng bootstrap để tính khoảng tin cậy ở GĐ7.
+  - Tập test chỉ 389 mẫu → dùng bootstrap để tính khoảng tin cậy (đã áp dụng từ GĐ4).
 - **Đánh đổi:** tóm tắt chỉ một câu và miền hẹp (thông tin chính phủ Anh); `description` do biên tập viên viết cho trang web, chưa được người kiểm định chất lượng nhãn (sẽ chấm tay mẫu nhỏ ở GĐ7).
 
 ## D4. Mô hình chính: BART-base (so sánh với T5-small, Seq2Seq+Attention)
@@ -58,6 +60,7 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 - **Bằng chứng:** _(điền sau GĐ6–7)_
 
 ## D5. Chỉ số đánh giá: ROUGE-1/2/L + BERTScore (+ độ dài, tốc độ)
+- **Cài đặt cố định (GĐ4):** BERTScore F1, roberta-large, rescale_with_baseline; ROUGE có stemming, báo cáo R1/R2/L/Lsum; CI 95% bootstrap 1.000 lần (kiểm định ghép cặp 2.000 lần), seed 42. Giữ nguyên cài đặt này ở GĐ6–7. Với cùng k, BERTScore và ROUGE xếp hạng Lead/TextRank/Random giống nhau, trừ CNN/DM k=1 (Lead-1 vs TextRank-1, BERTScore bằng nhau). Thứ hạng giữa các cấu hình khác k hoặc các hệ thống gần ngang nhau (Random-k, Oracle-2 vs Oracle-3) có thể đảo chiều giữa hai chỉ số.
 - **Lý do:** ROUGE là chuẩn của tóm tắt nhưng chỉ đo trùng từ; BERTScore bổ sung độ tương đồng ngữ nghĩa; thêm phân tích định tính cho hallucination.
 - **Đánh đổi:** cả hai không đo được tính đúng sự thật → cần chấm tay mẫu nhỏ.
 
@@ -65,6 +68,7 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
 - Colab/Kaggle GPU T4, tập con ~20–30k mẫu, fp16.
 - Seed cố định, mỗi thí nghiệm một file config trong `configs/`.
 - Checkpoint lưu ngoài GitHub (Drive/HuggingFace Hub).
+
 ## D7. Tiền xử lý và cấu hình độ dài
 - **Làm sạch CNN/DM:** bỏ tiền tố Daily Mail (byline, PUBLISHED/UPDATED), dateline CNN (kể cả địa danh viết hoa/thường và kiểu "(CNN)Nội dung" không có dấu "--"), cụm rác giữa bài (Scroll down for video, E-mail to a friend, Share this article) và URL; chuẩn hóa khoảng trắng. Nội dung bị thay đổi ở 14.084/20.000 bài train (70,4%), 333/1.000 val (33,3%) và 356/1.000 test (35,6%).
 - **Kết quả kiểm tra (120 ký tự đầu, train):** "By ." giảm từ 34,16% xuống 0,02%; PUBLISHED/UPDATED từ 21,96% xuống 0,14%; "(CNN)" từ 25,89% xuống 0,03%. Còn sót 33/19.895 bài train (0,17%), 0 bài ở val và test. Quy tắc làm sạch được hiệu chỉnh hai vòng sau khi kiểm tra các bài còn sót (vòng 1 còn sót 8,5% ở train do dateline viết thường và byline có từ nối).
@@ -78,6 +82,7 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   - Tóm tắt: CNN/DM trung vị 60, p95 109 token; 2,0% dài hơn 128 token (BART; T5: 4,9%), mất 0,5% token. GOV.UK trung vị 27, p95 44 token; 0,7% dài hơn 64 token (BART), 0% dài hơn 128.
   - **Quyết định:** `max_input = 512` làm cấu hình mặc định cho mọi mô hình (huấn luyện nhanh, vừa GPU T4, công bằng khi so sánh); `max_target = 128` (CNN/DM) và `64` (GOV.UK). BART-base chạy thêm `max_input = 1024` như ablation ở GĐ6.
 - **Đánh đổi:** cắt ở 512 token làm mất thông tin cuối bài (79% bài CNN/DM bị cắt). Với CNN/DM, 64% câu tóm tắt có nguồn nằm trong 10 câu đầu nên việc cắt chấp nhận được nhưng không miễn phí; ablation 512 vs 1024 ở GĐ6 sẽ đo tác động thực tế lên ROUGE. Các regex làm sạch được thiết kế theo định dạng của CNN/DM nên không dùng được nguyên cho nguồn khác.
+
 ## D8. Giao thức đánh giá baseline (GĐ4)
 - **Hệ thống:** Lead-k, Random-k, TextRank-k, Oracle-k (k = 1, 2, 3); test CNN/DM (1.000) và GOV.UK (389).
 - **Chỉ số:** ROUGE-1/2/L/Lsum (có stemming), BERTScore F1 (roberta-large, rescale), độ dài, ms/doc; bootstrap 95% (1.000 lần, seed 42).
@@ -85,4 +90,11 @@ Dòng "Bằng chứng" được **điền sau khi có kết quả** (GĐ4–7). 
   1. CNN/DM: Lead-3 > TextRank-3 về ROUGE-1 và ROUGE-2.
   2. GOV.UK: Lead-1 là baseline extractive tốt nhất; Lead-3 thấp hơn Lead-1 vì dài hơn tham chiếu (~21 từ).
   3. Cả hai bộ: Lead-k > Random-k, và Oracle chọn câu ở 3 câu đầu nhiều hơn mức phân bố đều.
-- **Kết quả / kết luận:** _(điền sau khi chạy)_
+- **Kết quả (test CNN/DM n=1.000, GOV.UK n=389; CI 95% bootstrap, kiểm định ghép cặp trên ROUGE):**
+  1. CNN/DM: Lead-3 vượt TextRank-3 ở mọi chỉ số (R1 40,3 vs 35,2; R2 17,6 vs 13,8; BERTScore 26,0 vs 21,6; hiệu R1 +5,1, CI [4,4; 5,9]). Lead-3 xấp xỉ mức công bố của văn liệu (~40/17/37) phù hợp với việc pipeline hoạt động đúng.
+  2. GOV.UK: Lead-1 là baseline extractive tốt nhất (R1 33,1; R2 15,0; BERTScore 30,0), vượt TextRank-1 (24,8; 8,1; 22,6) và vượt Lead-3 (R1 +9,1); điểm giảm dần khi tăng k vì tham chiếu chỉ ~1 câu.
+  3. Lead-k vượt Random-k ở cả 6 cấu hình. Oracle-1 nằm trong 3 câu đầu ở 39,8% (CNN/DM) và 50,4% (GOV.UK), cao hơn mức phân bố đều 12,7% và 19,7%.
+  4. Ngoại lệ: CNN/DM k=1, TextRank-1 nhỉnh hơn Lead-1 (R1 +1,4, CI [0,5; 2,3]) nhưng BERTScore bằng nhau và TextRank-1 dài hơn 17%; chênh lệch nhỏ, chưa hiệu chỉnh nhiều phép so sánh.
+  5. Khoảng cách tới Oracle còn lớn: Lead-3 đạt 71% R1 và 52% R2 của Oracle-3 (CNN/DM); Lead-1 đạt 77% R1 của Oracle-1 (GOV.UK).
+- **Kết luận:** giả thuyết lead bias được xác nhận ở cả hai bộ. Lead-3 (CNN/DM) và Lead-1 (GOV.UK) là mốc extractive thực tế cần vượt ở GĐ6.
+- **Hạn chế:** Oracle là xấp xỉ tham lam dùng tham chiếu nên không phải hệ thống thực tế. Lead-1 GOV.UK dài hơn tham chiếu 72% (36,6 vs 21,3 từ). Bộ lọc overlap ≥ 0,9 ở GĐ2 có thể làm lệch test GOV.UK. Test GOV.UK chỉ 389 mẫu (CI rộng ~±1,7 điểm R1). Kiểm định ghép cặp mới làm cho ROUGE, chưa làm cho BERTScore, và chưa hiệu chỉnh đa so sánh.
