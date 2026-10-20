@@ -92,6 +92,7 @@ def main(argv=None) -> None:
                 row.update(source=source, system=system, k=k, ms_per_doc=ms)
                 rows.append(row)
                 print(f"{name:12s} R1={row['rouge1']:.4f} R2={row['rouge2']:.4f} RLsum={row['rougeLsum']:.4f} "
+                      f"BS={row.get('bertscore_f1', float('nan')):.4f} "
                       f"len={row['avg_pred_words']:.1f} (ref {row['avg_ref_words']:.1f}) {ms:.1f} ms/doc")
                 if system == "oracle" and k == max(scfg["ks"]):
                     pos_rows.append(position_stats(source, records, idx, k))

@@ -42,21 +42,31 @@ def rouge_per_sample(preds: list[str], refs: list[str], use_stemmer: bool = True
     return {k: np.array(v) for k, v in out.items()}
 
 
+_BS_CACHE: dict = {}
+
+
+def _get_bertscorer(model_type: str, rescale: bool, batch_size: int):
+    """Nạp model BERTScore MỘT lần rồi dùng lại (trước đây nạp lại cho mỗi hệ thống)."""
+    from bert_score import BERTScorer
+    key = (model_type, rescale)
+    if key not in _BS_CACHE:
+        _BS_CACHE[key] = BERTScorer(model_type=model_type, lang="en", rescale_with_baseline=rescale,
+                                    batch_size=batch_size)
+    return _BS_CACHE[key]
+
+
 def bertscore_per_sample(preds: list[str], refs: list[str], model_type: str = "roberta-large",
                          rescale: bool = True, batch_size: int = 32) -> np.ndarray:
     """BERTScore F1 từng mẫu. Xuống dòng được đổi thành khoảng trắng."""
-    from bert_score import score
     p = [x.replace("\n", " ") or "." for x in preds]
     r = [x.replace("\n", " ") for x in refs]
     try:
-        _, _, f1 = score(p, r, model_type=model_type, lang="en", rescale_with_baseline=rescale,
-                         batch_size=batch_size, verbose=False)
+        _, _, f1 = _get_bertscorer(model_type, rescale, batch_size).score(p, r)
     except Exception as e:               # thiếu file baseline cho model đó
         if not rescale:
             raise
         warnings.warn(f"BERTScore rescale thất bại ({e}); chạy lại không rescale")
-        _, _, f1 = score(p, r, model_type=model_type, lang="en", rescale_with_baseline=False,
-                         batch_size=batch_size, verbose=False)
+        _, _, f1 = _get_bertscorer(model_type, False, batch_size).score(p, r)
     return f1.numpy()
 
 

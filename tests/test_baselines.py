@@ -45,3 +45,13 @@ def test_bootstrap_ci_brackets_mean_and_is_deterministic():
     m, lo, hi = bootstrap_ci(v, 500, seed=1)
     assert lo < m < hi and (m, lo, hi) == bootstrap_ci(v, 500, seed=1)
     assert np.isnan(bootstrap_ci([])[0])
+
+
+def test_paired_tests_detects_clear_difference():
+    from src.analysis.compare_baselines import paired_tests
+    rng = np.random.default_rng(0)
+    base = rng.uniform(0.2, 0.4, 200)
+    sc = {"lead-1": {m: base + 0.05 for m in ("rouge1", "rouge2", "rougeLsum")},
+          "textrank-1": {m: base for m in ("rouge1", "rouge2", "rougeLsum")}}
+    df = paired_tests(sc, [("lead-1", "textrank-1")], 300, 1)
+    assert df["significant"].all() and (df["diff"] > 0.04).all()
