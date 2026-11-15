@@ -1,0 +1,11 @@
+source,split,k,S_points,is_best,is_chosen,old_default_k,chosen_differs_from_old
+cnn_dm,validation,1,21.33,False,False,3,False
+cnn_dm,validation,2,30.59,False,False,3,False
+cnn_dm,validation,3,33.3,True,True,3,False
+cnn_dm,validation,4,32.63,False,False,3,False
+cnn_dm,validation,5,31.29,False,False,3,False
+govuk,validation,1,24.69,True,True,1,False
+govuk,validation,2,21.86,False,False,1,False
+govuk,validation,3,18.82,False,False,1,False
+govuk,validation,4,16.3,False,False,1,False
+govuk,validation,5,14.27,False,False,1,False

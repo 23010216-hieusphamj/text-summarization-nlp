@@ -1,0 +1,66 @@
+# So sánh trên TEST (GĐ6 Bước 8): cặp kiểm định ghép cặp, nhóm độ dài bài, bảng tổng hợp và đường cong hội tụ.
+# Tên hệ thống ở đây là nhãn tự đặt; (system, gen_tag) của loại `hf` phải khớp dòng trong results/tables/hf_{source}.csv.
+
+cnn_dm:
+  systems:
+    lead-3:          {type: lead, k: 3}
+    seq2seq:         {type: preds, file: cnn_dm_seq2seq-beam4_nr3.jsonl}                     # sinh lại bằng decode_seq2seq
+    bart_ft:         {type: hf, system: bart_cnndm_in512,           gen_tag: b4-lp1-nr3-min0-max96}    # A, mô hình chính
+    bart_ft_default: {type: hf, system: bart_cnndm_in512,           gen_tag: b4-lp1-nr3-min0-max128}   # A, giải mã mặc định
+    bart_1024:       {type: hf, system: bart_cnndm_in1024,          gen_tag: b4-lp1-nr3-min0-max96}    # C
+    t5_ft:           {type: hf, system: t5small_cnndm_in512,        gen_tag: b4-lp1-nr3-min0-max128}   # B
+    bart_zeroshot:   {type: hf, system: bart_cnndm_in512_zeroshot,  gen_tag: b4-lp1-nr3-min0-max128}   # Z1
+    t5_zeroshot:     {type: hf, system: t5small_cnndm_in512_zeroshot, gen_tag: b4-lp1-nr3-min0-max128} # Z2
+  pairs:
+    - [bart_ft, lead-3]
+    - [t5_ft, lead-3]
+    - [bart_ft, seq2seq]
+    - [bart_ft, bart_zeroshot]        # tinh chỉnh so với zero-shot (nhận xét 1 của giảng viên)
+    - [t5_ft, t5_zeroshot]
+    - [bart_ft, t5_ft]
+    - [bart_1024, bart_ft]            # max_input 1.024 so với 512 (nhận xét 2)
+    - [bart_ft, bart_ft_default]      # chỉnh max_length trên validation có giữ lại trên test không
+    - [bart_zeroshot, lead-3]
+    - [t5_zeroshot, lead-3]
+  by_length_systems: [lead-3, bart_ft, bart_1024, t5_ft]
+  by_length_pairs:
+    - [bart_ft, lead-3]
+    - [bart_1024, bart_ft]
+    - [t5_ft, bart_ft]
+  summary:
+    - {kind: baselines, system: lead,     k: 3, label: "Lead-3",                       family: "Trích câu"}
+    - {kind: baselines, system: textrank, k: 3, label: "TextRank-3",                   family: "Trích câu"}
+    - {kind: seq2seq,   system: seq2seq-beam4_nr3, label: "Seq2Seq BiGRU + attention", family: "Sinh, huấn luyện từ đầu"}
+    - {kind: hf, system: bart_cnndm_in512_zeroshot,   gen_tag: b4-lp1-nr3-min0-max128, label: "BART-base zero-shot", family: "Tiền huấn luyện, chưa tinh chỉnh"}
+    - {kind: hf, system: t5small_cnndm_in512_zeroshot, gen_tag: b4-lp1-nr3-min0-max128, label: "T5-small zero-shot", family: "Tiền huấn luyện, chưa tinh chỉnh"}
+    - {kind: hf, system: bart_cnndm_in512,  gen_tag: b4-lp1-nr3-min0-max96,  label: "BART-base tinh chỉnh (512, max_length 96)",  family: "Tinh chỉnh"}
+    - {kind: hf, system: bart_cnndm_in512,  gen_tag: b4-lp1-nr3-min0-max128, label: "BART-base tinh chỉnh (512, giải mã mặc định)", family: "Tinh chỉnh"}
+    - {kind: hf, system: bart_cnndm_in1024, gen_tag: b4-lp1-nr3-min0-max96,  label: "BART-base tinh chỉnh (1.024, max_length 96)", family: "Tinh chỉnh"}
+    - {kind: hf, system: t5small_cnndm_in512, gen_tag: b4-lp1-nr3-min0-max128, label: "T5-small tinh chỉnh (512)", family: "Tinh chỉnh"}
+
+govuk:
+  systems:
+    lead-1:        {type: lead, k: 1}
+    seq2seq:       {type: preds, file: govuk_seq2seq-beam4_nr3.jsonl}                        # chéo miền (huấn luyện trên CNN/DM)
+    bart_govuk:    {type: hf, system: bart_govuk_in512,          gen_tag: b4-lp1-nr3-min0-max64}   # D
+    bart_xdomain:  {type: hf, system: bart_cnndm_in512_xdomain,  gen_tag: b4-lp1-nr3-min0-max64}   # A chéo miền
+  pairs:
+    - [bart_govuk, lead-1]
+    - [bart_govuk, seq2seq]
+    - [bart_govuk, bart_xdomain]
+    - [bart_xdomain, lead-1]
+    - [bart_xdomain, seq2seq]
+  by_length_systems: [lead-1, bart_govuk]
+  by_length_pairs:
+    - [bart_govuk, lead-1]
+  summary:
+    - {kind: baselines, system: lead,     k: 1, label: "Lead-1",                       family: "Trích câu"}
+    - {kind: baselines, system: textrank, k: 1, label: "TextRank-1",                   family: "Trích câu"}
+    - {kind: seq2seq,   system: seq2seq-beam4_nr3, label: "Seq2Seq (chéo miền: huấn luyện CNN/DM)", family: "Sinh, huấn luyện từ đầu"}
+    - {kind: hf, system: bart_cnndm_in512_xdomain, gen_tag: b4-lp1-nr3-min0-max64, label: "BART-base huấn luyện CNN/DM (chéo miền)", family: "Tinh chỉnh (chéo miền)"}
+    - {kind: hf, system: bart_govuk_in512,         gen_tag: b4-lp1-nr3-min0-max64, label: "BART-base tinh chỉnh trên GOV.UK", family: "Tinh chỉnh"}
+
+# Đường cong hội tụ: nhóm run vẽ chung một hình (loss theo token của từng tokenizer, không so trực tiếp BART với T5)
+curves:
+  cnn_dm: [bart_cnndm_in512, bart_cnndm_in512_lr3e5, bart_cnndm_in512_lr1e4, bart_cnndm_in1024, t5small_cnndm_in512]
+  govuk:  [bart_govuk_in512]

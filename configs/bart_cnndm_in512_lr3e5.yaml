@@ -1,0 +1,38 @@
+# Thí nghiệm E (D10): như A nhưng learning rate 3e-5 (ablation lr quanh 5e-5; mọi thứ khác giữ nguyên)
+run_name: bart_cnndm_in512_lr3e5
+kind: bart
+model_name: facebook/bart-base
+source: cnn_dm
+max_input: 512            # đã gồm <s>, </s> (D7)
+max_target: 128
+preprocess_config: configs/preprocess.yaml
+data_dir: data/processed/clean      # trên Colab: --data_dir /content/drive/MyDrive/nlp_summarization/clean
+cache_dir: data/processed/hf_cache  # trên Colab: --cache_dir /content/drive/MyDrive/nlp_summarization/hf_cache
+
+# Giá trị mặc định ban đầu theo D10 (đề xuất, chưa kiểm chứng; chỉnh sau smoke test). Chọn trên validation, không dùng test.
+train:
+  seed: 42
+  lr: 3.0e-5
+  weight_decay: 0.01
+  batch_size: 8             # mỗi micro-batch
+  grad_accum: 2             # batch hiệu dụng 16
+  epochs: 3
+  warmup_ratio: 0.06
+  clip_norm: 1.0
+  amp: true                 # fp16 cho BART
+  patience: 3               # = epochs: không dừng sớm (chỉ 3 epoch)
+  log_every: 50             # ghi loss theo bước tối ưu mỗi 50 bước
+  save_every_steps: 400     # lưu last.pt giữa epoch (Colab có thể ngắt); mỗi lần ghi ~1,7 GB -> chỉnh nếu Drive chậm
+  eval_batch_size: 32
+best_by: S                  # chọn epoch theo S = TB(R1,R2,Rlsum) trên tập con validation (D10); "val_loss" để so sánh
+val_rouge_n: 300            # ROUGE theo epoch trên 300 mẫu validation cố định
+val_gen:                    # giải mã ban đầu (D10), khai tường minh để không dính mặc định ẩn của mô hình
+  num_beams: 4
+  max_length: 128
+  min_length: 0
+  length_penalty: 1.0
+  no_repeat_ngram_size: 3
+  early_stopping: false
+output:
+  log_dir: results/logs
+  ckpt_dir: checkpoints     # đã bị .gitignore; trên Colab trỏ ra Drive bằng --ckpt_dir

@@ -1,0 +1,22 @@
+# Dữ liệu tokenize cho tinh chỉnh BART-base / T5-small (GĐ6, Bước 3)
+# Tên tokenizer, tiền tố T5 và target_join lấy từ preprocess.yaml (một nguồn duy nhất).
+preprocess_config: configs/preprocess.yaml
+data_dir: data/processed/clean      # trên Colab: --data_dir /content/drive/MyDrive/nlp_summarization/clean
+cache_dir: data/processed/hf_cache  # nên đặt trên Drive: --cache_dir /content/drive/MyDrive/nlp_summarization/hf_cache
+splits: [train, validation]         # tập dùng khi huấn luyện (test chỉ giải mã từ văn bản gốc, không cần token hóa)
+
+# Các cấu hình cần cho D10 (nguồn, mô hình, max_input, max_target)
+plan:
+  - {source: cnn_dm, kind: bart, max_input: 512,  max_target: 128}   # A, mô hình chính
+  - {source: cnn_dm, kind: bart, max_input: 1024, max_target: 128}   # C, ablation độ dài đầu vào (D7)
+  - {source: cnn_dm, kind: t5,   max_input: 512,  max_target: 128}   # B
+  - {source: govuk,  kind: bart, max_input: 512,  max_target: 64}    # D
+  - {source: govuk,  kind: t5,   max_input: 512,  max_target: 64}    # tùy chọn (T5-small trên GOV.UK)
+
+# Bảng số token từng bài (không cắt) để chia điểm theo độ dài bài ≤512 / >512 (nhận xét 2)
+length_tables:
+  splits: [validation, test]
+  thresholds: [512, 1024]
+
+output:
+  tables_dir: results/tables

@@ -8,7 +8,8 @@
     python -m src.decode_seq2seq ... --limit 50 --no_bertscore --tag smoke                   # chạy thử
 
 Đầu ra: results/predictions/{source}_seq2seq-{tag}.jsonl, results/tables/seq2seq_{source}.csv (cùng cột với
-baselines_{source}.csv + vài cột thêm). Cài đặt đánh giá lấy từ configs/baselines.yaml để giống hệt D5/D8.
+baselines_{source}.csv + vài cột thêm). Tập khác test (vd. --split validation) ghi sang file có hậu tố _{split}
+(vd. seq2seq_cnn_dm_validation.csv) và --limit thêm hậu tố _limitN, nên không ghi đè kết quả test. Cài đặt đánh giá lấy từ configs/baselines.yaml để giống hệt D5/D8.
 Chặn lặp được áp dụng ở mức token SentencePiece (không phải từ).
 """
 from __future__ import annotations
@@ -24,7 +25,8 @@ import torch.nn.functional as F
 import yaml
 
 from src.data.seq2seq_data import load_examples
-from src.decode_utils import banned_tokens, repeated_trigram_rate, sentences_text, upsert_rows
+from src.decode_utils import (banned_tokens, pred_path, repeated_trigram_rate, sentences_text, table_path,
+                              upsert_rows)
 from src.evaluate import evaluate_predictions
 from src.models.seq2seq import Seq2Seq
 from src.preprocessing.spm_tokenizer import BOS_ID, EOS_ID, PAD_ID, UNK_ID, load_spm, read_jsonl
@@ -151,6 +153,7 @@ def main(argv=None) -> None:
     model.load_state_dict(ck["model"]); model.eval()
     sp = load_spm(cfg["spm_model"])
     system = f"seq2seq-{tag}"
+    out_tag = a.split if a.limit is None else f"{a.split}_limit{a.limit}"     # hậu tố tên file đầu ra
     print(f"{system}: checkpoint epoch {ck['epoch']} (val loss {ck['val_loss']:.4f}), beams={nb}, "
           f"no_repeat_ngram={nr}, length_penalty={lp}, max_len={ml}, thiết bị {device}")
 
@@ -161,19 +164,20 @@ def main(argv=None) -> None:
         print(f"\n=== {source}: {len(records)} mẫu ===")
         preds, ms = decode_corpus(model, examples, sp, device, num_beams=nb, max_len=ml, no_repeat_ngram=nr,
                                   length_penalty=lp)
-        with open(preds_dir / f"{source}_{system}.jsonl", "w", encoding="utf-8") as f:
+        with open(pred_path(preds_dir, source, system, out_tag), "w", encoding="utf-8") as f:
             for r, p in zip(records, preds):
                 f.write(json.dumps({"id": r["id"], "prediction": p}, ensure_ascii=False) + "\n")
         row = evaluate_predictions(
             preds, refs, use_stemmer=ev["rouge_stemmer"], bertscore=ev["bertscore"] and not a.no_bertscore,
             bertscore_model=ev["bertscore_model"], bertscore_rescale=ev["bertscore_rescale"],
             bertscore_batch_size=ev["bertscore_batch_size"], n_boot=ev["bootstrap_samples"], seed=seed)
-        row.update(source=source, system=system, split=a.split, num_beams=nb, no_repeat_ngram=nr, length_penalty=lp,
+        row.update(source=source, system=system, split=out_tag, num_beams=nb, no_repeat_ngram=nr, length_penalty=lp,
                    max_len=ml, ms_per_doc=ms, rep_trigram_pct=repeated_trigram_rate(preds),
                    n_params=sum(p.numel() for p in model.parameters()), ckpt_epoch=int(ck["epoch"]))
         first = ["source", "system", "n"]
         df = pd.DataFrame([row]); df = df[first + [c for c in df.columns if c not in first]]
-        upsert_rows(tables / f"seq2seq_{source}.csv", df)
+        upsert_rows(table_path(tables, "seq2seq", source, out_tag), df, keys=("source", "system", "split"),
+                    old_defaults={"split": out_tag})
         print(f"{system:20s} R1={row['rouge1']:.4f} R2={row['rouge2']:.4f} RLsum={row['rougeLsum']:.4f} "
               f"BS={row.get('bertscore_f1', float('nan')):.4f} len={row['avg_pred_words']:.1f} "
               f"(ref {row['avg_ref_words']:.1f}) lặp trigram {row['rep_trigram_pct']:.1f}% {ms:.0f} ms/bài")

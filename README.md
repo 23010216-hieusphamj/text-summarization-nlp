@@ -90,6 +90,30 @@ BiGRU 2 tầng + attention cộng, 7,46 triệu tham số, từ vựng SentenceP
 
 Nhận xét ngắn: Seq2Seq từ đầu thấp hơn Lead-3 (CNN/DM) và Lead-1 (GOV.UK) có ý nghĩa thống kê (`results/tables/seq2seq_paired_tests.csv`). Chặn lặp trigram giảm lỗi lặp từ 56–70% xuống khoảng 2% và tăng ROUGE-1 1,3–1,8 điểm so với beam 4 không chặn. Đây là mốc "từ đầu" để đối chiếu với BART/T5 ở Giai đoạn 6.
 
+### GĐ6: tinh chỉnh BART-base và T5-small (tag v0.7-finetune)
+ 
+Kết quả trên **tập test** (một lần chạy cho mỗi cấu hình đã chốt trên validation; CI 95% bằng bootstrap; thang ×100):
+ 
+(dán bảng markdown từ `results/tables/final_comparison_cnn_dm.md` và `final_comparison_govuk.md`)
+ 
+Đường cong hội tụ: `results/figures/hf_curves_cnn_dm.png`, `results/figures/hf_curves_govuk.png`.
+Kiểm định ghép cặp: `results/tables/hf_paired_tests_*.csv`; điểm theo độ dài bài: `results/tables/hf_by_length_*.csv`;
+ablation giải mã: `results/tables/decode_selection_*.csv`; chi tiết quyết định và dự đoán so với kết quả: `docs/decisions.md` (D10).
+
+Checkpoint (không nằm trong GitHub): Google Drive, thư mục `checkpoints/{run_name}/best.pt`
+(bart_cnndm_in512, bart_cnndm_in1024, bart_cnndm_in512_lr3e5, bart_cnndm_in512_lr1e4, t5small_cnndm_in512, bart_govuk_in512).
+
+Tái lập (Colab T4; thay đường dẫn Drive):
+ 
+    python -m src.data.hf_seq2seq_data --data_dir <clean> --cache_dir <hf_cache>            # token hóa + bảng số token
+    python -m src.train_hf --config configs/bart_cnndm_in512.yaml --data_dir <clean> --cache_dir <hf_cache> \
+        --ckpt_dir <checkpoints> --log_dir <logs>                                           # thêm --resume nếu bị ngắt
+    python -m src.generate_hf --config configs/bart_cnndm_in512.yaml --zero_shot --split test ...   # mốc zero-shot
+    python -m src.ablate_decode --key cnn_dm --ckpt_dir <checkpoints> ...                   # ablation giải mã (validation)
+    python -m src.generate_hf --config ... --ckpt <best.pt> --split test <tham số đã chốt>  # test, một lần
+    python -m src.analysis.compare_hf --data_dir <clean> --bertscore                        # kiểm định ghép cặp, theo độ dài bài
+    python -m src.analysis.summarize_results ; python -m src.analysis.plot_hf_curves        # bảng tổng hợp, đường cong
+
 *(Bảng so sánh đầy đủ với BART-base, T5-small và phân tích lỗi sẽ cập nhật ở Giai đoạn 7.)*
 
 ## Tiến độ

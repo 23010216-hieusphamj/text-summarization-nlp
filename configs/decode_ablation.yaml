@@ -1,0 +1,36 @@
+# Ablation giải mã trên VALIDATION (D10, nhận xét 3): đổi từng tham số một quanh cấu hình gốc, không lưới đầy đủ.
+# Cấu hình gốc = val_gen của config huấn luyện (D10: beam 4, chặn lặp trigram 3, length_penalty 1,0).
+# max_length và min_length tính theo TOKEN của tokenizer mô hình. Chọn theo S = TB(R1, R2, Rlsum) với quy tắc hòa 0,2 điểm.
+# Lưu ý: length_penalty > 1 khuyến khích sinh dài hơn, < 1 ngắn hơn; A hiện sinh dài hơn tham chiếu (~70 so với ~55 từ).
+
+cnn_dm:                                  # BART-base, CNN/DM, max_input 512 (mô hình chính A)
+  run_config: configs/bart_cnndm_in512.yaml
+  ckpt_run: bart_cnndm_in512
+  base: {num_beams: 4, max_length: 128, min_length: 0, length_penalty: 1.0, no_repeat_ngram_size: 3, early_stopping: false}
+  factors:
+    num_beams: [1, 2, 8]
+    length_penalty: [0.6, 1.5, 2.0]
+    max_length: [64, 96]
+    min_length: [56]
+    no_repeat_ngram_size: [0]
+
+govuk:                                   # BART-base tinh chỉnh trên GOV.UK (D); tham chiếu ngắn nên max_length/min_length nhỏ hơn
+  run_config: configs/bart_govuk_in512.yaml
+  ckpt_run: bart_govuk_in512
+  base: {num_beams: 4, max_length: 64, min_length: 0, length_penalty: 1.0, no_repeat_ngram_size: 3, early_stopping: false}
+  factors:
+    num_beams: [1, 2, 8]
+    length_penalty: [0.6, 1.5, 2.0]
+    max_length: [32, 48]
+    min_length: [16]
+    no_repeat_ngram_size: [0]
+
+cnn_dm_t5:                               # tùy chọn: T5-small trên CNN/DM, rút gọn vì T5 giải mã chậm hơn
+  run_config: configs/t5small_cnndm_in512.yaml
+  ckpt_run: t5small_cnndm_in512
+  base: {num_beams: 4, max_length: 128, min_length: 0, length_penalty: 1.0, no_repeat_ngram_size: 3, early_stopping: false}
+  factors:
+    num_beams: [1, 8]
+    length_penalty: [0.6, 2.0]
+    max_length: [96]
+    no_repeat_ngram_size: [0]

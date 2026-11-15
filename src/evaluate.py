@@ -70,10 +70,11 @@ def bertscore_per_sample(preds: list[str], refs: list[str], model_type: str = "r
     return f1.numpy()
 
 
-def evaluate_predictions(preds: list[str], refs: list[str], *, use_stemmer: bool = True, bertscore: bool = True,
-                         bertscore_model: str = "roberta-large", bertscore_rescale: bool = True,
-                         bertscore_batch_size: int = 32, n_boot: int = 1000, seed: int = 42) -> dict:
-    """Trả về một dòng kết quả: mean / lo / hi cho từng chỉ số + độ dài trung bình (số từ)."""
+def evaluate_with_samples(preds: list[str], refs: list[str], *, use_stemmer: bool = True, bertscore: bool = True,
+                          bertscore_model: str = "roberta-large", bertscore_rescale: bool = True,
+                          bertscore_batch_size: int = 32, n_boot: int = 1000, seed: int = 42
+                          ) -> tuple[dict, dict[str, np.ndarray]]:
+    """Như evaluate_predictions nhưng trả thêm điểm TỪNG MẪU {chỉ số: mảng} (cho tương quan, phân tích lỗi, kiểm định ghép cặp)."""
     assert len(preds) == len(refs) and preds, "preds và refs phải cùng độ dài và không rỗng"
     metrics = rouge_per_sample(preds, refs, use_stemmer)
     if bertscore:
@@ -85,7 +86,16 @@ def evaluate_predictions(preds: list[str], refs: list[str], *, use_stemmer: bool
         row.update({name: m, f"{name}_lo": lo, f"{name}_hi": hi})
     row["avg_pred_words"] = float(np.mean([word_count(p) for p in preds]))
     row["avg_ref_words"] = float(np.mean([word_count(r) for r in refs]))
-    return row
+    return row, metrics
+
+
+def evaluate_predictions(preds: list[str], refs: list[str], *, use_stemmer: bool = True, bertscore: bool = True,
+                         bertscore_model: str = "roberta-large", bertscore_rescale: bool = True,
+                         bertscore_batch_size: int = 32, n_boot: int = 1000, seed: int = 42) -> dict:
+    """Trả về một dòng kết quả: mean / lo / hi cho từng chỉ số + độ dài trung bình (số từ)."""
+    return evaluate_with_samples(preds, refs, use_stemmer=use_stemmer, bertscore=bertscore,
+                                 bertscore_model=bertscore_model, bertscore_rescale=bertscore_rescale,
+                                 bertscore_batch_size=bertscore_batch_size, n_boot=n_boot, seed=seed)[0]
 
 
 def _read_jsonl(path) -> list[dict]:
