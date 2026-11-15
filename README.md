@@ -157,8 +157,8 @@ Tái lập (Colab T4; thay đường dẫn Drive):
 - [x] GĐ4: Baseline (Lead-3, TextRank) — [`v0.5-baselines`]
 - [x] GĐ5: Seq2Seq + Attention— [`v0.6-seq2seq`]
 - [x] GĐ6: Fine-tune BART / T5 — [`v0.7-finetune`]
-- [x] GĐ7: Đánh giá + phân tích lỗi (D4, cờ độ dài và inter-rater 8 mẫu đã hoàn thành; còn kiểm tra trước commit và kiểm thử cuối)
-- [-] GĐ8: Demo
+- [x] GĐ7: Đánh giá + phân tích lỗi (v0.8-evaluation)
+- GĐ8: Demo
 - [x] GĐ9: Báo cáo (v0.9-report)
 - [x] GĐ10: Slides (v1.0-final)
 ## Nhóm thực hiện

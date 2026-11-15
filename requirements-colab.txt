@@ -10,3 +10,5 @@ langdetect
 beautifulsoup4
 requests
 sentencepiece
+networkx>=3.2
+scikit-learn>=1.4

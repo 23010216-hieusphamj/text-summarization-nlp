@@ -36,3 +36,6 @@ results/gd7/blind/*_completed.csv
 results/gd7/error_analysis_samples.md
 results/gd7/human_rating_completed.csv
 results/gd7/human_rerate_completed.csv
+
+# Dữ liệu mẫu chứa nội dung bài viết
+data/samples/
