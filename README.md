@@ -2,7 +2,7 @@
 
 Bài tập lớn học phần **Xử lý ngôn ngữ tự nhiên** – Đề tài: *Xây dựng hệ thống tóm tắt văn bản tiếng Anh*.
 
-> Trạng thái: GĐ7: Đánh giá + phân tích lỗi (xem [Tiến độ](#tiến-độ))
+> Trạng thái: xem [Tiến độ](#tiến-độ)
 
 ## 1. Bài toán
 - **Đầu vào:** một bài văn bản tiếng Anh (ví dụ: bài báo tin tức).
@@ -35,7 +35,6 @@ data/         dữ liệu (raw/processed không commit)
 src/          mã nguồn: crawl, preprocessing, baselines, models, train, evaluate
 notebooks/    EDA, phân tích lỗi
 results/      figures (đường cong hội tụ), tables, logs
-app/          demo
 docs/         workflow, decisions.md, báo cáo, slides
 tests/        unit test
 ```
@@ -156,10 +155,9 @@ Tái lập (Colab T4; thay đường dẫn Drive):
 - [x] GĐ4: Baseline (Lead-3, TextRank) — [`v0.5-baselines`]
 - [x] GĐ5: Seq2Seq + Attention— [`v0.6-seq2seq`]
 - [x] GĐ6: Fine-tune BART / T5 — [`v0.7-finetune`]
-- [ ] GĐ7: Đánh giá + phân tích lỗi (D4, cờ độ dài và inter-rater 8 mẫu đã hoàn thành; còn kiểm tra trước commit và kiểm thử cuối)
-- [ ] GĐ8: Demo
-- [ ] GĐ9–10: Báo cáo, slides
-
+- [x] GĐ7: Đánh giá + phân tích lỗi (D4, cờ độ dài và inter-rater 8 mẫu đã hoàn thành; còn kiểm tra trước commit và kiểm thử cuối)
+- [-] GĐ8: Demo
+- [x] GĐ9-10: Báo cáo, slides
 ## Nhóm thực hiện
 | Họ tên | Mã SV | Nhiệm vụ |
 |---|---|---|

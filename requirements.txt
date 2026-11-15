@@ -22,7 +22,5 @@ requests
 beautifulsoup4
 trafilatura
 langdetect
-# Demo (Giai đoạn 8)
-gradio>=4.0
 # Test
 pytest
