@@ -137,7 +137,7 @@ Tái lập (Colab T4; thay đường dẫn Drive):
 
 *(Bảng so sánh BART-base/T5-small, tương quan chỉ số và phân tích lỗi được lưu trong `results/` và `results/gd7/`.)*
 
-### GĐ7 – Đánh giá tổng hợp, phân tích lỗi và chấm tay (đang hoàn thiện)
+### GĐ7 – Đánh giá tổng hợp, phân tích lỗi và chấm tay
 
 - **Tương quan ROUGE–BERTScore trên từng mẫu của toàn bộ test:** A trên CNN/DM có Spearman(S, BERTScore) = **0,849 [0,826; 0,868]**; D trên GOV.UK = **0,790 [0,743; 0,828]**. Với A, Spearman(R1, BERTScore) = 0,828 và Spearman(R2, BERTScore) = 0,807. Phạm vi: `results/tables/correlation_cnn_dm.csv/.md`, `results/tables/correlation_govuk.csv/.md`.
 - **Phân tích lỗi định tính 16 mẫu:** thiếu thông tin/lựa chọn lệch trọng tâm ở 10/16; sai dữ kiện/ảo giác ở 2/16; đầu ra bị cắt cụt ở 1/16; 5/16 mẫu không phát hiện lỗi đáng kể. Nhãn có thể chồng lấp; đây là mô tả mẫu chọn có chủ đích, không phải tỷ lệ lỗi toàn test. Chi tiết: `results/gd7/error_analysis_annotations.md`.
@@ -145,7 +145,9 @@ Tái lập (Colab T4; thay đường dẫn Drive):
 - **Chấm tay lượt 1:** 40 mẫu (30 CNN/DM–A, 10 GOV.UK–D), một người chấm (Phạm Bá Hiếu), ba tiêu chí thang 1–5. Điểm trung bình: Fluency **3,78** [3,48; 4,05], Completeness **3,23** [3,00; 3,45], Factuality **4,50** [4,15; 4,83]. Do mẫu được phân tầng theo tứ phân vị S, các thống kê chỉ mô tả 40 mẫu đã chọn, không đại diện toàn bộ test. Báo cáo: `results/gd7/human_analysis.md`; dữ liệu: `results/gd7/human_summary.csv`, `results/gd7/human_correlations.csv`, `results/gd7/human_correlation_comparisons.csv`, `results/gd7/human_error_labels.csv`.
 - **Liên hệ điểm chấm tay với chỉ số tự động:** Spearman(Completeness, BERTScore) = 0,373 [0,042; 0,616], so với Completeness–ROUGE-2 = 0,177 [-0,129; 0,444]; hiệu ghép cặp 0,196 [-0,049; 0,453] có CI chứa 0. Chưa có bằng chứng rõ rằng BERTScore tương quan với điểm đầy đủ cao hơn ROUGE-2 trên toàn bộ 40 mẫu.
 - **Độ đồng thuận giữa hai người chấm trên 8 mẫu:** lượt 1 do Phạm Bá Hiếu, lượt 2 do một thành viên khác thực hiện. Người chấm lượt hai đã đọc rubric, chỉ được cung cấp bài gốc và tóm tắt, không được xem điểm/nhận xét lượt một trước khi chấm. QWK/Spearman lần lượt: Fluency 0,750/0,832; Completeness 0,684/0,717; Factuality 1,000/1,000. Có 18/24 cặp điểm trùng tuyệt đối (75%) và 24/24 cặp chênh không quá 1 điểm. Đây là inter-rater agreement trên n=8, chỉ mang tính mô tả/thăm dò; không phải test–retest của cùng người chấm. Phương án thực tế khác kế hoạch ban đầu (lượt hai được làm sớm và do người khác chấm), được ghi rõ trong D11.
-- **Còn lại để đóng GĐ7:** chạy script kiểm tra trước commit và kiểm thử cuối. Hai cột `length_diff` và `length_ratio` đã được bổ sung, tái tạo trên toàn bộ test và kiểm tra tính nhất quán.
+- **Kết quả đóng GĐ7:** hoàn thành kiểm thử 183 test trên Google Colab,
+  46 test thuộc các module phân tích GĐ7, kiểm tra dữ liệu và tài liệu.
+  Đã commit và gắn tag v0.8-evaluation.
 
 ## Tiến độ
 - [x] GĐ0: Khởi tạo repo, workflow v1, decision log - [`v0.1-setup`]
@@ -157,11 +159,12 @@ Tái lập (Colab T4; thay đường dẫn Drive):
 - [x] GĐ6: Fine-tune BART / T5 — [`v0.7-finetune`]
 - [x] GĐ7: Đánh giá + phân tích lỗi (D4, cờ độ dài và inter-rater 8 mẫu đã hoàn thành; còn kiểm tra trước commit và kiểm thử cuối)
 - [-] GĐ8: Demo
-- [x] GĐ9-10: Báo cáo, slides
+- [x] GĐ9: Báo cáo (v0.9-report)
+- [x] GĐ10: Slides (v1.0-final)
 ## Nhóm thực hiện
 | Họ tên | Mã SV | Nhiệm vụ |
 |---|---|---|
-|Phạm Bá Hiếu|23010216| ... |
-|Nguyễn Phi Hùng|23010582| ... |
-|Tiêu Hải Nam|23010214 | ... |
-|Lê Sơn Hải|23010007| ... |
+|Phạm Bá Hiếu|23010216|Điều phối, thiết kế phương pháp, đánh giá tổng hợp, phân tích lỗi và biên tập báo cáo|
+|Nguyễn Phi Hùng|23010582|Thu thập, làm sạch, tiền xử lý và thống kê dữ liệu|
+|Tiêu Hải Nam|23010214 |Xây dựng baseline, Seq2Seq và đánh giá mô hình|
+|Lê Sơn Hải|23010007|Fine-tuning BART/T5, thiết kế thí nghiệm và ablation|
