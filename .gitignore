@@ -23,4 +23,16 @@ runs/
 .DS_Store
 .vscode/
 
+# Kết quả dự đoán mô hình (lưu ngoài GitHub)
 results/predictions/
+
+# Dữ liệu sạch chứa toàn văn bài báo; lưu trên Google Drive, không commit lên repo công khai
+data/clean/
+
+# GĐ7: phiếu mù/chấm tay và bản phân tích mẫu có chứa toàn văn bài gốc, tham chiếu hoặc dự đoán
+results/gd7/blind/*.jsonl
+results/gd7/blind/*_form.csv
+results/gd7/blind/*_completed.csv
+results/gd7/error_analysis_samples.md
+results/gd7/human_rating_completed.csv
+results/gd7/human_rerate_completed.csv

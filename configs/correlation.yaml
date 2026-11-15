@@ -1,0 +1,36 @@
+# GĐ7 (D11): tương quan từng mẫu giữa ROUGE và BERTScore trên TEST.
+# Mỗi hệ thống ứng với một file results/scores/{file} (đã có sẵn từ GĐ4-6, đủ cột BERTScore); không chạy lại mô hình.
+# Quy tắc và dự đoán viết trước ở docs/decisions.md (D11). Spearman là chỉ số chính, Pearson là phụ.
+seed: 42
+n_boot: 1000          # bootstrap trên mẫu, CI 95% (percentile)
+# Các cặp (độ đo A, độ đo B) tính tương quan. "S" = trung bình (rouge1, rouge2, rougeLsum) của từng mẫu (D11).
+pairs:
+  - [S, bertscore_f1]
+  - [rouge1, bertscore_f1]
+  - [rouge2, bertscore_f1]
+  - [rougeLsum, bertscore_f1]
+# Hiệu hai hệ số trong cùng hệ thống (dùng chung các lần lấy mẫu lại, nên là hiệu ghép cặp): dự đoán số 2 của D11.
+diffs:
+  - [[rouge1, bertscore_f1], [rouge2, bertscore_f1]]
+
+cnn_dm:
+  n_expected: 1000
+  main: A_bart_512            # hệ thống chính của D11
+  systems:
+    Lead-3:            {file: cnn_dm_lead-3.csv}
+    Seq2Seq:           {file: cnn_dm_seq2seq-beam4_nr3.csv}
+    Z1_bart_zeroshot:  {file: cnn_dm_bart_cnndm_in512_zeroshot__b4-lp1-nr3-min0-max128.csv}
+    Z2_t5_zeroshot:    {file: cnn_dm_t5small_cnndm_in512_zeroshot__b4-lp1-nr3-min0-max128.csv, note: "Lsum thấp do đầu ra chữ thường không tách được câu (D10): S và Lsum không so sánh được"}
+    A_bart_512:        {file: cnn_dm_bart_cnndm_in512__b4-lp1-nr3-min0-max96.csv}
+    A_default_decode:  {file: cnn_dm_bart_cnndm_in512__b4-lp1-nr3-min0-max128.csv}
+    C_bart_1024:       {file: cnn_dm_bart_cnndm_in1024__b4-lp1-nr3-min0-max96.csv}
+    B_t5small:         {file: cnn_dm_t5small_cnndm_in512__b4-lp1-nr3-min0-max128.csv}
+
+govuk:
+  n_expected: 389
+  main: D_bart_govuk
+  systems:
+    Lead-1:            {file: govuk_lead-1.csv}
+    Seq2Seq_xdomain:   {file: govuk_seq2seq-beam4_nr3.csv}
+    A_xdomain:         {file: govuk_bart_cnndm_in512_xdomain__b4-lp1-nr3-min0-max64.csv}
+    D_bart_govuk:      {file: govuk_bart_govuk_in512__b4-lp1-nr3-min0-max64.csv}

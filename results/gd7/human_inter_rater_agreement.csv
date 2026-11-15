@@ -1,0 +1,4 @@
+﻿criterion,criterion_vi,n,rater_1_mean,rater_2_mean,mean_difference_rater_2_minus_rater_1,quadratic_weighted_kappa,spearman_inter_rater,exact_agreement_pct,within_one_point_pct,mean_absolute_difference
+fluency_1_5,Trôi chảy (Fluency),8,3.5,3.625,0.125,0.75,0.8323510192088925,62.5,100.0,0.375
+completeness_1_5,Đầy đủ (Completeness),8,3.25,2.875,-0.375,0.6842105263157895,0.7171371656006362,62.5,100.0,0.375
+factuality_1_5,Đúng sự thật (Factuality),8,4.125,4.125,0.0,1.0,0.9999999999999998,100.0,100.0,0.0

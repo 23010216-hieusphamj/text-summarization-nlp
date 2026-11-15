@@ -1,0 +1,11 @@
+﻿scope,n_samples,label,count,pct_of_samples
+all,40,hallucination,6,15.0
+all,40,missing_information,26,65.0
+all,40,none,12,30.0
+all,40,other,5,12.5
+cnn_dm,30,hallucination,3,10.0
+cnn_dm,30,missing_information,17,56.666666666666664
+cnn_dm,30,none,12,40.0
+cnn_dm,30,other,5,16.666666666666668
+govuk,10,hallucination,3,30.0
+govuk,10,missing_information,9,90.0

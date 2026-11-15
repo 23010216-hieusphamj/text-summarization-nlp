@@ -1,0 +1,24 @@
+# GĐ7 (D11): chọn mẫu phân tích lỗi (16) và mẫu chấm tay (40, + 8 mẫu chấm lại) từ điểm TEST đã có; tính cờ tự động.
+# Quy tắc cố định trước khi xem nội dung (docs/decisions.md, D11). KHÔNG chỉnh file này sau khi đã chạy.
+seed: 42
+mid_range: [0.40, 0.60]          # khoảng phân vị của S cho nhóm "giữa" (phân vị S: 0 = thấp nhất, 1 = cao nhất)
+rerate_n: 8                      # số mẫu chọn ngẫu nhiên trong 40 mẫu để chấm lại sau >= 3 ngày
+# Số mẫu chấm tay theo tứ phân vị của S, thứ tự Q1 (S thấp nhất) -> Q4 (S cao nhất)
+human_quartile_counts:
+  cnn_dm: [8, 7, 8, 7]           # 30 mẫu
+  govuk:  [3, 2, 3, 2]           # 10 mẫu
+# Số mẫu phân tích lỗi
+error_counts:
+  cnn_dm: {top: 4, bottom: 4, mid: 4}
+  govuk:  {top: 2, bottom: 2, mid: 0}
+
+cnn_dm:
+  system: A_bart_512             # BART-base tinh chỉnh, max_input 512, max_length 96 (mô hình chính)
+  scores: cnn_dm_bart_cnndm_in512__b4-lp1-nr3-min0-max96.csv
+  predictions: cnn_dm_bart_cnndm_in512__b4-lp1-nr3-min0-max96.jsonl
+  lead_k: 3
+govuk:
+  system: D_bart_govuk           # BART-base tinh chỉnh trên GOV.UK, giải mã mặc định max_length 64
+  scores: govuk_bart_govuk_in512__b4-lp1-nr3-min0-max64.csv
+  predictions: govuk_bart_govuk_in512__b4-lp1-nr3-min0-max64.jsonl
+  lead_k: 1

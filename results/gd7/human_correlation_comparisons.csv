@@ -1,0 +1,4 @@
+﻿scope,n,comparison,bertscore_spearman,rouge2_spearman,difference,difference_ci95_low,difference_ci95_high,bootstrap_valid
+all,40,"Spearman(Completeness, BERTScore) - Spearman(Completeness, ROUGE-2)",0.3732782833124961,0.17712629920476683,0.19615198410772924,-0.04877310509929319,0.45334677534419804,1000
+cnn_dm,30,"Spearman(Completeness, BERTScore) - Spearman(Completeness, ROUGE-2)",0.5197107971040866,0.19369736050156905,0.3260134366025176,0.06567751381335914,0.6227040820585988,1000
+govuk,10,"Spearman(Completeness, BERTScore) - Spearman(Completeness, ROUGE-2)",0.21499801446559036,0.14085904245475275,0.0741389720108376,-0.7111055208871943,0.7338456484837649,995

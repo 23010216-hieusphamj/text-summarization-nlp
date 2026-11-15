@@ -1,0 +1,17 @@
+source,system,id,S,group,rank_desc
+cnn_dm,A_bart_512,bdf2ee6d1aef4af9db69d92f5d05cd31b685e3b9,0.9660750521592499,top,1
+cnn_dm,A_bart_512,8f0ad7c6c5f699c865c2b4851a9c0046dbf5364a,0.848496732026144,top,2
+cnn_dm,A_bart_512,66c24ada8816fc2133531907038e6a48962d258a,0.8363712026633375,top,3
+cnn_dm,A_bart_512,225f2330a6477e05fd3cebb31d3c87243cd40eb6,0.7780599903241413,top,4
+cnn_dm,A_bart_512,b06e7dce98c068155e768bb08281bd481b2f0883,0.3374524967445321,mid,418
+cnn_dm,A_bart_512,a726904222fc9e3d5d59b88c562fc98eb8a7070f,0.3177024482109228,mid,488
+cnn_dm,A_bart_512,dbe88c222291256015eb60119399f7e28d250260,0.3049872122762148,mid,531
+cnn_dm,A_bart_512,28d940e270c4faaadcc18258904f4a7a5dc35cfd,0.3001126887536623,mid,554
+cnn_dm,A_bart_512,7db2bc1563c9474eacd18fb0f2a0abfad634cb89,0.018518518518518465,bottom,1000
+cnn_dm,A_bart_512,b35a0c9ceceba8e01f7f3a66aa32b77082efba80,0.046875,bottom,999
+cnn_dm,A_bart_512,c24964e8980078862cbef7bb14418b7468fe64aa,0.0526315789473684,bottom,998
+cnn_dm,A_bart_512,57fb2e5ad7bd41a578ad906ca9b7d23380176a9f,0.06060606060606057,bottom,997
+govuk,D_bart_govuk,/government/news/april-2026-transaction-data,1.0,top,1
+govuk,D_bart_govuk,/government/news/january-2024-transaction-data,1.0,top,2
+govuk,D_bart_govuk,/government/news/scottish-secretary-alister-jack-responds-to-february-2023-gdp,0.030303030303030266,bottom,389
+govuk,D_bart_govuk,/government/news/msk-patients-to-get-faster-care-and-help-returning-to-work,0.036036036036036,bottom,388
